@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Health Ledger - Meal Summary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#dde4e5",
+                    "surface-container-high": "#e4e9ea",
+                    "on-secondary-fixed": "#2f4436",
+                    "on-tertiary-fixed": "#454b48",
+                    "on-secondary-container": "#415748",
+                    "background": "#ffffff",
+                    "primary-fixed-dim": "#d4d4d4",
+                    "surface": "#ffffff",
+                    "surface-container-low": "#f8f9f9",
+                    "on-tertiary": "#f5faf6",
+                    "tertiary-container": "#f0f5f1",
+                    "on-background": "#000000",
+                    "primary-dim": "#1a1a1a",
+                    "tertiary-fixed": "#f0f5f1",
+                    "error-dim": "#4e0309",
+                    "error-container": "#fe8983",
+                    "secondary-fixed": "#d0e9d5",
+                    "on-error": "#fff7f6",
+                    "on-primary-fixed": "#3f3f3f",
+                    "tertiary-fixed-dim": "#e1e7e3",
+                    "inverse-surface": "#000000",
+                    "primary-fixed": "#e2e2e2",
+                    "on-primary-container": "#525252",
+                    "secondary": "#2f4436",
+                    "on-tertiary-fixed-variant": "#626764",
+                    "tertiary-dim": "#4f5452",
+                    "secondary-dim": "#425849",
+                    "outline": "#000000",
+                    "surface-variant": "#f2f2f2",
+                    "on-secondary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#000000",
+                    "on-primary-fixed-variant": "#5b5b5b",
+                    "on-tertiary-container": "#2f4436",
+                    "on-surface-variant": "#666666",
+                    "secondary-fixed-dim": "#c2dbc7",
+                    "surface-container": "#f2f2f2",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#ffffff",
+                    "primary-container": "#000000",
+                    "surface-tint": "#000000",
+                    "surface-dim": "#e5e5e5",
+                    "on-secondary-fixed-variant": "#4b6151",
+                    "secondary-container": "#d0e9d5",
+                    "tertiary": "#2f4436",
+                    "error": "#b91c1c",
+                    "on-error-container": "#450a0a",
+                    "on-surface": "#000000",
+                    "outline-variant": "#e5e5e5",
+                    "inverse-primary": "#ffffff",
+                    "inverse-on-surface": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0px",
+                    "lg": "0px",
+                    "xl": "0px",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+        }
+        .border-heavy {
+            border-width: 2px;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-secondary-container">
+<!-- Top Navigation -->
+<header class="w-full top-0 px-6 py-4 bg-white border-b-2 border-black sticky z-50">
+<div class="flex justify-between items-center w-full max-w-2xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 border-2 border-black flex items-center justify-center bg-white">
+<span class="material-symbols-outlined text-black" data-icon="person">person</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-black hover:opacity-70 transition-opacity active:scale-95 duration-100">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-2xl mx-auto px-6 py-10 pb-32">
+<!-- Header -->
+<div class="mb-10">
+<h2 class="text-4xl font-black font-headline tracking-tighter uppercase border-b-4 border-black inline-block mb-3">Dinner Ledger</h2>
+<p class="text-on-surface-variant font-label text-[10px] font-bold uppercase tracking-[0.3em]">Tuesday, Oct 24 • 7:45 PM</p>
+</div>
+<!-- Main Highlight Card -->
+<div class="grid grid-cols-12 gap-0 mb-6 border-2 border-black">
+<div class="col-span-12 p-8 border-b-2 border-black relative">
+<div class="absolute top-4 right-4">
+<button class="p-2 hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-black" data-icon="edit_note">edit_note</span>
+</button>
+</div>
+<div class="flex flex-col">
+<span class="font-bold text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-4">Total Energy</span>
+<div class="flex items-baseline gap-2">
+<span class="text-8xl font-black tracking-tighter text-black">642</span>
+<span class="text-2xl font-black text-secondary">KCAL</span>
+</div>
+</div>
+<div class="mt-10 h-4 w-full bg-surface-container-low border-2 border-black relative">
+<div class="h-full bg-secondary w-2/3"></div>
+</div>
+<p class="mt-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">22% of daily budget used.</p>
+</div>
+<div class="col-span-12 bg-tertiary-container p-6 flex flex-col justify-between">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary font-bold" data-icon="restaurant">restaurant</span>
+<span class="font-black text-lg uppercase tracking-tight">Grilled Salmon Bowl</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-widest text-on-tertiary-container font-bold opacity-60">Protein Focus</span>
+<span class="text-3xl font-black text-secondary">HIGH</span>
+</div>
+</div>
+</div>
+<!-- Macros -->
+<div class="space-y-4 mb-10">
+<h3 class="font-bold text-[10px] uppercase tracking-[0.3em] text-on-surface-variant mb-4">Macro Ledger</h3>
+<div class="grid grid-cols-3 gap-0 border-2 border-black divide-x-2 divide-black">
+<!-- Protein -->
+<div class="bg-white p-6 text-center">
+<span class="material-symbols-outlined text-secondary mb-3 scale-110" data-icon="fitness_center">fitness_center</span>
+<div class="text-3xl font-black tracking-tighter">42g</div>
+<div class="text-[9px] font-black uppercase tracking-widest text-on-surface-variant mt-1">Protein</div>
+</div>
+<!-- Carbs -->
+<div class="bg-white p-6 text-center">
+<span class="material-symbols-outlined text-secondary mb-3 scale-110" data-icon="grain">grain</span>
+<div class="text-3xl font-black tracking-tighter">28g</div>
+<div class="text-[9px] font-black uppercase tracking-widest text-on-surface-variant mt-1">Carbs</div>
+</div>
+<!-- Fats -->
+<div class="bg-white p-6 text-center">
+<span class="material-symbols-outlined text-secondary mb-3 scale-110" data-icon="water_drop">water_drop</span>
+<div class="text-3xl font-black tracking-tighter">18g</div>
+<div class="text-[9px] font-black uppercase tracking-widest text-on-surface-variant mt-1">Fats</div>
+</div>
+</div>
+</div>
+<!-- Disclaimer -->
+<div class="p-6 border-2 border-black border-dashed bg-surface-container-low">
+<div class="flex gap-4 items-start">
+<span class="material-symbols-outlined text-black mt-1" data-icon="info" style="font-variation-settings: 'FILL' 1;">info</span>
+<div class="flex flex-col gap-1">
+<span class="text-[10px] font-black uppercase tracking-widest">System Disclaimer</span>
+<p class="text-[11px] font-medium leading-tight text-on-surface-variant uppercase">Values are calculated based on standard portion sizes. Review individual ingredients in detail view for precise data.</p>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="mt-12">
+<button class="w-full flex items-center justify-center gap-3 px-8 py-5 bg-black text-white font-black uppercase tracking-[0.2em] transition-all active:scale-[0.98] hover:bg-secondary">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+<span>Adjust Meal Ledger</span>
+</button>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-6 py-4 bg-white border-t-2 border-black pb-safe">
+<a class="flex flex-col items-center justify-center bg-secondary text-white px-4 py-2 border-2 border-black" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-[9px] uppercase tracking-widest font-black mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-black p-2 hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="text-[9px] uppercase tracking-widest font-black mt-1">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-black p-2 hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-[9px] uppercase tracking-widest font-black mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-black p-2 hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[9px] uppercase tracking-widest font-black mt-1">Profile</span>
+</a>
+</nav>
+</body></html>

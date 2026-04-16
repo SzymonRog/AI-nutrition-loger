@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.venv/
+env/
+venv/
+ENV/
+*.pyc
+__pycache__/
+
+# Database & Data
+data/processed/*.db
+data/raw/*
+!data/raw/.keep
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+dist/
+build/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+pip-log.txt
+pip-delete-this-directory.txt
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# Temp
+/tmp/
+check_db.py

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Meal Entry - Health Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-highest": "#dde4e5",
+                        "surface-container-high": "#e4e9ea",
+                        "on-secondary-fixed": "#2f4436",
+                        "on-tertiary-fixed": "#454b48",
+                        "on-secondary-container": "#415748",
+                        "background": "#ffffff",
+                        "primary-fixed-dim": "#d4d4d4",
+                        "surface": "#ffffff",
+                        "surface-container-low": "#f8f9f9",
+                        "on-tertiary": "#f5faf6",
+                        "tertiary-container": "#f0f5f1",
+                        "on-background": "#000000",
+                        "primary-dim": "#1a1a1a",
+                        "tertiary-fixed": "#f0f5f1",
+                        "error-dim": "#4e0309",
+                        "error-container": "#fe8983",
+                        "secondary-fixed": "#d0e9d5",
+                        "on-error": "#fff7f6",
+                        "on-primary-fixed": "#3f3f3f",
+                        "tertiary-fixed-dim": "#e1e7e3",
+                        "inverse-surface": "#000000",
+                        "primary-fixed": "#e2e2e2",
+                        "on-primary-container": "#525252",
+                        "secondary": "#1B3022",
+                        "on-tertiary-fixed-variant": "#626764",
+                        "tertiary-dim": "#4f5452",
+                        "secondary-dim": "#425849",
+                        "outline": "#000000",
+                        "surface-variant": "#f2f2f2",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "primary": "#000000",
+                        "on-primary-fixed-variant": "#5b5b5b",
+                        "on-tertiary-container": "#2f4436",
+                        "on-surface-variant": "#666666",
+                        "secondary-fixed-dim": "#c2dbc7",
+                        "surface-container": "#f2f2f2",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#ffffff",
+                        "primary-container": "#000000",
+                        "surface-tint": "#000000",
+                        "surface-dim": "#e5e5e5",
+                        "on-secondary-fixed-variant": "#4b6151",
+                        "secondary-container": "#d0e9d5",
+                        "tertiary": "#1B3022",
+                        "error": "#b91c1c",
+                        "on-error-container": "#450a0a",
+                        "on-surface": "#000000",
+                        "outline-variant": "#e5e5e5",
+                        "inverse-primary": "#ffffff",
+                        "inverse-on-surface": "#ffffff"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0px",
+                        "lg": "0px",
+                        "xl": "0px",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            min-height: 100dvh;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-secondary-container pb-32">
+<!-- Top Navigation -->
+<header class="w-full top-0 px-6 py-4 bg-white border-b-2 border-black sticky z-50">
+<div class="flex justify-between items-center w-full max-w-2xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 border-2 border-black flex items-center justify-center bg-white">
+<span class="material-symbols-outlined text-black" data-icon="person">person</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-black hover:opacity-70 transition-opacity active:scale-95 duration-100">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</header>
+<main class="max-w-2xl mx-auto px-6 py-10 space-y-12">
+<!-- Page Title Header -->
+<div>
+<h2 class="text-4xl font-black font-headline tracking-tighter uppercase border-b-4 border-black inline-block mb-3">Meal Entry</h2>
+<p class="text-on-surface-variant font-label text-[10px] font-bold uppercase tracking-[0.3em]">Journal Entry</p>
+</div>
+<!-- Meal Description Input Section -->
+<section class="space-y-4">
+<h3 class="font-bold text-[10px] uppercase tracking-[0.3em] text-on-surface-variant">Describe your meal</h3>
+<div class="border-2 border-black bg-[#f0f5f1] p-6 relative">
+<textarea class="w-full h-48 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-relaxed text-lg font-medium" placeholder="E.g., Two poached eggs on sourdough with a side of avocado and black coffee..."></textarea>
+<div class="absolute bottom-4 right-4">
+<span class="material-symbols-outlined text-black/20 text-4xl" data-icon="edit_note">edit_note</span>
+</div>
+</div>
+<button class="w-full bg-secondary text-white py-5 px-6 border-2 border-black font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 active:translate-y-0.5 transition-all">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                Estimate with AI
+            </button>
+</section>
+<!-- Recent Favorites Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h3 class="font-bold text-[10px] uppercase tracking-[0.3em] text-on-surface-variant">Recent Favorites</h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="history">history</span>
+</div>
+<div class="border-2 border-black divide-y-2 divide-black overflow-hidden">
+<!-- Favorite 1 -->
+<div class="flex items-center justify-between p-6 bg-white group cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 border-2 border-black flex items-center justify-center bg-white shrink-0">
+<span class="material-symbols-outlined text-secondary" data-icon="egg_alt">egg_alt</span>
+</div>
+<div>
+<p class="text-sm font-black uppercase tracking-tight">Breakfast Scramble</p>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase mt-0.5">Frequent Add</p>
+</div>
+</div>
+<div class="text-right shrink-0">
+<p class="text-xl font-black">340 <span class="text-[10px] text-secondary">KCAL</span></p>
+</div>
+</div>
+<!-- Favorite 2 -->
+<div class="flex items-center justify-between p-6 bg-white group cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 border-2 border-black flex items-center justify-center bg-white shrink-0">
+<span class="material-symbols-outlined text-secondary" data-icon="coffee">coffee</span>
+</div>
+<div>
+<p class="text-sm font-black uppercase tracking-tight">Oat Milk Latte</p>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase mt-0.5">Morning Essential</p>
+</div>
+</div>
+<div class="text-right shrink-0">
+<p class="text-xl font-black">120 <span class="text-[10px] text-secondary">KCAL</span></p>
+</div>
+</div>
+<!-- Favorite 3 -->
+<div class="flex items-center justify-between p-6 bg-white group cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 border-2 border-black flex items-center justify-center bg-white shrink-0">
+<span class="material-symbols-outlined text-secondary" data-icon="flatware">flatware</span>
+</div>
+<div>
+<p class="text-sm font-black uppercase tracking-tight">Green Garden Salad</p>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase mt-0.5">Light Choice</p>
+</div>
+</div>
+<div class="text-right shrink-0">
+<p class="text-xl font-black">210 <span class="text-[10px] text-secondary">KCAL</span></p>
+</div>
+</div>
+</div>
+</section>
+<!-- Information/Disclaimer -->
+<div class="bg-[#d0e9d5] border-2 border-black p-6 flex items-start gap-4">
+<span class="material-symbols-outlined text-secondary mt-0.5" data-icon="info">info</span>
+<p class="text-[11px] text-black font-bold uppercase tracking-wider leading-relaxed">
+                AI estimates are based on standard portion sizes. You can refine details after estimation to ensure your ledger remains precise.
+            </p>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-[#f9f9f9]/80 dark:bg-neutral-900/80 backdrop-blur-md border-t-[1.5px] border-[#757c7d]">
+<a class="flex flex-col items-center justify-center text-[#757c7d] dark:text-neutral-500 p-2 hover:text-[#2d3435] dark:hover:text-white Active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-semibold mt-1">HOME</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#4e6455] dark:text-[#8ba391] bg-[#4e6455]/10 rounded-lg p-2 scale-110 Active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-semibold mt-1">ADD</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#757c7d] dark:text-neutral-500 p-2 hover:text-[#2d3435] dark:hover:text-white Active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-semibold mt-1">HISTORY</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#757c7d] dark:text-neutral-500 p-2 hover:text-[#2d3435] dark:hover:text-white Active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-semibold mt-1">PROFILE</span>
+</a>
+</nav>
+</body></html>

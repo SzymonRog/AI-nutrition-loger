@@ -1,0 +1,20 @@
+- [x] Backend: Deletion Logic
+    - [x] Update `DatabaseManager` with `delete_meal` and `get_meal` methods
+    - [x] Implement `DELETE /meals/{meal_id}` in `meals.py` (with image cleanup)
+- [x] Backend: Unified Photo + Description
+    - [x] Update `VisionAIProcessor` to accept a description hint
+    - [x] Update `ImageNutritionWorkflow` to pass description through
+    - [x] Update `POST /meals/image` to include optional description
+- [x] Backend: History Retrieval
+    - [x] Add `get_user_meal_history` to `DatabaseManager`
+    - [x] Add `GET /meals/history` endpoint
+- [x] Frontend: API Integration
+    - [x] Update `client.js` with new endpoints
+- [x] Frontend: Meal Type & Entry Flow
+    - [x] Implement multi-step flow in `MealEntry.jsx` (Select Type -> Select Method)
+    - [x] Add description field to image upload flow
+- [x] Frontend: History View
+    - [x] Create `History.jsx` component
+    - [x] Add routing and navigation
+- [x] Frontend: Deletion UI
+    - [x] Add delete buttons with confirmation modal to `Dashboard.jsx` and `History.jsx`

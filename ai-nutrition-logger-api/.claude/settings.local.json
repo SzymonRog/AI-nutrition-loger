@@ -1,0 +1,32 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://openrouter.ai/api",
+    "ANTHROPIC_AUTH_TOKEN": "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",
+    "ANTHROPIC_API_KEY": "",
+    "ANTHROPIC_MODEL": "qwen/qwen3.6-plus:free"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(.venv/Scripts/python.exe -c \"from src.main import main; print\\(''Import OK''\\)\")",
+      "Bash(.venv/Scripts/python.exe src/main.py)",
+      "Bash(pip install:*)",
+      "Bash(python -m uvicorn src.api.main:app --reload --host 127.0.0.1 --port 8000)",
+      "Bash(timeout 3)",
+      "Bash(python -c \"from src.config.constants import *; print\\('constants OK'\\)\")",
+      "Bash(python -c \"from src.core.macros_utils import scale_macros, calculate_totals, build_db_items; from src.models.nutrition_models import *; print\\('macros_utils OK'\\)\")",
+      "Bash(python -c \"from src.core.macros_utils import scale_macros, calculate_totals, build_db_items; print\\('macros_utils OK'\\)\")",
+      "Bash(python -c \"from src.processors.base_ai_processor import BaseAIProcessor; print\\('base_ai_processor OK'\\)\")",
+      "Bash(JWT_SECRET_KEY=test python -c \"from src.api import auth; print\\('auth OK'\\)\")",
+      "Bash(python -c ':*)",
+      "Bash(JWT_SECRET_KEY=test python -c \"from src.api.main import app; print\\('App OK'\\); print\\('Routes:', [r.path for r in app.routes]\\)\")",
+      "Bash(touch:*)",
+      "Bash(JWT_SECRET_KEY=test python -m pytest tests/ -v)",
+      "Bash(JWT_SECRET_KEY=test python -m pytest tests/test_config tests/test_core tests/test_processors -v)",
+      "Bash(JWT_SECRET_KEY=test python -m pytest tests/test_config tests/test_core tests/test_processors tests/test_services -v)",
+      "Bash(JWT_SECRET_KEY=test python -m pytest tests/test_config tests/test_core tests/test_processors tests/test_services -v --tb=short)",
+      "Bash(JWT_SECRET_KEY=test python -m pytest tests/test_api -v --tb=short)",
+      "Bash(JWT_SECRET_KEY=test python -m pytest tests/ -v --tb=short)",
+      "Bash(JWT_SECRET_KEY=test python -m pytest tests/test_api/test_auth.py::TestRegister::test_register_success tests/test_api/test_auth.py::TestRegister::test_register_default_calorie_goal -v --tb=short)"
+    ]
+  }
+}
