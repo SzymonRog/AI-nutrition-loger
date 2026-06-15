@@ -124,6 +124,22 @@ class DatabaseManager:
                 cursor.execute("ALTER TABLE meals ADD COLUMN meal_title TEXT")
                 conn.commit()
 
+            # Migrations - Ensure biometric columns exist on users
+            cursor.execute("PRAGMA table_info(users)")
+            user_columns = [col[1] for col in cursor.fetchall()]
+            for col_name, col_type in [
+                ("sex", "TEXT"),
+                ("age", "INTEGER"),
+                ("height_cm", "REAL"),
+                ("weight_kg", "REAL"),
+                ("activity_level", "TEXT"),
+                ("goal_direction", "TEXT"),
+                ("goal_pace", "TEXT"),
+            ]:
+                if col_name not in user_columns:
+                    cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
+            conn.commit()
+
     # --- AUTHENTICATION ---
 
     def create_user_with_password(
@@ -214,6 +230,65 @@ class DatabaseManager:
             row = cursor.fetchone()
             return dict(row) if row else None
 
+    def update_user_profile(
+        self,
+        user_id: str,
+        daily_calorie_goal: int,
+        sex: Optional[str] = None,
+        age: Optional[int] = None,
+        height_cm: Optional[float] = None,
+        weight_kg: Optional[float] = None,
+        activity_level: Optional[str] = None,
+        goal_direction: Optional[str] = None,
+        goal_pace: Optional[str] = None,
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Updates the user's profile settings.
+
+        Always updates daily_calorie_goal. Biometric fields are only overwritten
+        when a non-None value is provided (COALESCE), so a goal-only manual
+        override preserves previously saved biometrics.
+
+        Args:
+            user_id (str): UUID of the user.
+            daily_calorie_goal (int): The new daily calorie budget.
+            sex (str, optional): Biological sex used for BMR calculation.
+            age (int, optional): Age in years.
+            height_cm (float, optional): Height in centimeters.
+            weight_kg (float, optional): Weight in kilograms.
+            activity_level (str, optional): Activity level enum value.
+            goal_direction (str, optional): LOSE, MAINTAIN, or GAIN.
+            goal_pace (str, optional): Pace of the goal (e.g. MODERATE).
+
+        Returns:
+            Optional[Dict[str, Any]]: Processed user profile, or None if update failed.
+        """
+        now = datetime.now()
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE users
+                SET daily_calorie_goal = ?,
+                    sex = COALESCE(?, sex),
+                    age = COALESCE(?, age),
+                    height_cm = COALESCE(?, height_cm),
+                    weight_kg = COALESCE(?, weight_kg),
+                    activity_level = COALESCE(?, activity_level),
+                    goal_direction = COALESCE(?, goal_direction),
+                    goal_pace = COALESCE(?, goal_pace),
+                    updated_at = ?
+                WHERE id = ?
+            """, (
+                daily_calorie_goal, sex, age, height_cm, weight_kg,
+                activity_level, goal_direction, goal_pace, now, user_id,
+            ))
+            conn.commit()
+
+            if cursor.rowcount == 0:
+                return None
+
+        return self.get_user(user_id)
+
     # --- MEAL LOGGING ---
 
     def log_meal(self, user_id: str, meal_type: str, items: List[Dict[str, Any]], 
@@ -302,6 +377,31 @@ class DatabaseManager:
             # so this will cascade-delete meal_items.
             cursor.execute("DELETE FROM meals WHERE id = ?", (meal_id,))
             conn.commit()
+
+    def update_meal_totals(self, meal_id: str, user_id: str, total_calories: float, total_protein: float, total_carbs: float, total_fats: float) -> bool:
+        """
+        Updates the macro totals for a given meal, ensuring the user owns the meal.
+
+        Args:
+            meal_id (str): UUID of the meal to update.
+            user_id (str): UUID of the user who owns the meal.
+            total_calories (float): New total calories.
+            total_protein (float): New total protein.
+            total_carbs (float): New total carbs.
+            total_fats (float): New total fats.
+            
+        Returns:
+            bool: True if a row was updated, False otherwise (e.g. not found or wrong user).
+        """
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE meals 
+                SET total_calories = ?, total_protein = ?, total_carbs = ?, total_fats = ?
+                WHERE id = ? AND user_id = ?
+            """, (total_calories, total_protein, total_carbs, total_fats, meal_id, user_id))
+            conn.commit()
+            return cursor.rowcount > 0
 
     def get_meals_by_date(self, user_id: str, target_date: str) -> List[Dict[str, Any]]:
         """

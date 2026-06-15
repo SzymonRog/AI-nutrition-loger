@@ -146,3 +146,51 @@ class TestAiSummaries:
         user_id = db.create_user()
         result = db.get_latest_ai_summary(user_id, "WEEKLY")
         assert result is None
+
+
+def test_update_user_profile_persists_biometrics(test_db_path):
+    from src.services.db_service import DatabaseManager
+
+    db = DatabaseManager(db_path=test_db_path)
+    user_id = db.create_user(daily_calorie_goal=2000, email="bio@example.com")
+
+    updated = db.update_user_profile(
+        user_id,
+        daily_calorie_goal=2300,
+        sex="MALE",
+        age=30,
+        height_cm=180.0,
+        weight_kg=80.0,
+        activity_level="MODERATE",
+        goal_direction="LOSE",
+        goal_pace="MODERATE",
+    )
+
+    assert updated["daily_calorie_goal"] == 2300
+    assert updated["sex"] == "MALE"
+    assert updated["age"] == 30
+    assert updated["height_cm"] == 180.0
+    assert updated["weight_kg"] == 80.0
+    assert updated["activity_level"] == "MODERATE"
+    assert updated["goal_direction"] == "LOSE"
+    assert updated["goal_pace"] == "MODERATE"
+
+
+def test_update_user_profile_preserves_biometrics_on_goal_only_update(test_db_path):
+    from src.services.db_service import DatabaseManager
+
+    db = DatabaseManager(db_path=test_db_path)
+    user_id = db.create_user(daily_calorie_goal=2000, email="keep@example.com")
+    db.update_user_profile(
+        user_id, daily_calorie_goal=2300, sex="FEMALE", age=25,
+        height_cm=165.0, weight_kg=60.0, activity_level="LIGHT",
+        goal_direction="MAINTAIN", goal_pace=None,
+    )
+
+    # Manual override: only the goal changes; biometrics must survive.
+    updated = db.update_user_profile(user_id, daily_calorie_goal=1900)
+
+    assert updated["daily_calorie_goal"] == 1900
+    assert updated["sex"] == "FEMALE"
+    assert updated["weight_kg"] == 60.0
+    assert updated["activity_level"] == "LIGHT"
