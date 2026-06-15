@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   motion, AnimatePresence, animate, useMotionValue, useTransform,
 } from 'framer-motion';
@@ -111,7 +111,7 @@ function GoalStep({ form, set }) {
       <StepHeader title="Your Goal" subtitle="Pick a direction and pace" />
       <div className="grid grid-cols-3 gap-3 mb-6">
         {GOAL_DIRECTIONS.map((d) => (
-          <SelectCard key={d.key} selected={form.direction === d.key} onClick={() => set({ direction: d.key, pace: '' })}>
+          <SelectCard key={d.key} selected={form.direction === d.key} onClick={() => { if (form.direction !== d.key) set({ direction: d.key, pace: '' }); }}>
             <span className="text-sm font-black uppercase tracking-tight">{d.label}</span>
           </SelectCard>
         ))}
@@ -203,6 +203,26 @@ export default function CalorieWizard({
     pace: initialValues.goal_pace || '',
   });
 
+  const initialized = useRef(false);
+  useEffect(() => {
+    if (initialized.current) return;
+    const hasData = initialValues && (
+      initialValues.sex || initialValues.age || initialValues.height_cm ||
+      initialValues.weight_kg || initialValues.activity_level || initialValues.goal_direction
+    );
+    if (!hasData) return;
+    initialized.current = true;
+    setForm({
+      sex: initialValues.sex || '',
+      age: initialValues.age || '',
+      heightCm: initialValues.height_cm || '',
+      weightKg: initialValues.weight_kg || '',
+      activityLevel: initialValues.activity_level || '',
+      direction: initialValues.goal_direction || '',
+      pace: initialValues.goal_pace || '',
+    });
+  }, [initialValues]);
+
   const step = STEPS[stepIndex];
 
   const result = useMemo(() => {
@@ -223,7 +243,7 @@ export default function CalorieWizard({
   const canAdvance = () => {
     switch (step) {
       case 'SEX': return !!form.sex;
-      case 'METRICS': return form.age && form.heightCm && form.weightKg;
+      case 'METRICS': return Number(form.age) > 0 && Number(form.heightCm) > 0 && Number(form.weightKg) > 0;
       case 'ACTIVITY': return !!form.activityLevel;
       case 'GOAL': return form.direction && (form.direction === 'MAINTAIN' || form.pace);
       default: return true;
