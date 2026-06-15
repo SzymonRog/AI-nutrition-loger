@@ -66,6 +66,13 @@ erDiagram
 | `id` | UUID | Primary Key | Unique identifier for the user. |
 | `email` | VARCHAR(255) | Unique, Nullable | Ready for future authentication. |
 | `daily_calorie_goal`| INT | Nullable | User's daily calorie target for comparison. |
+| `sex` | VARCHAR(10) | Nullable | `MALE` or `FEMALE`; used for BMR. |
+| `age` | INT | Nullable | User age in years (13–120). |
+| `height_cm` | REAL | Nullable | Height in centimetres (50–250). |
+| `weight_kg` | REAL | Nullable | Weight in kilograms (20–400). |
+| `activity_level` | VARCHAR(20) | Nullable | One of SEDENTARY, LIGHT, MODERATE, ACTIVE, VERY_ACTIVE. |
+| `goal_direction` | VARCHAR(10) | Nullable | LOSE, MAINTAIN, or GAIN. |
+| `goal_pace` | VARCHAR(15) | Nullable | MILD, MODERATE, or AGGRESSIVE (null for MAINTAIN). |
 | `created_at` | TIMESTAMP | Not Null | When the local profile was created. |
 | `updated_at` | TIMESTAMP | Not Null | When the user profile was last updated. |
 
@@ -117,6 +124,8 @@ erDiagram
 
 ## Important Design Decisions
 
-1. **Denormalization for Speed**: The `meals` table stores aggregated `total_calories`, `total_protein`, etc. While this data could be calculated on the fly by summing up rows in `meal_items`, saving the rolled-up stats makes retrieving daily totals considerably faster.
+1. **Denormalization for Speed and Overrides**: The `meals` table stores aggregated `total_calories`, `total_protein`, etc. This serves two purposes:
+    * **Performance**: Retrieving daily totals is considerably faster than summing items on every request.
+    * **Manual Overrides**: Users can manually update these totals to correct AI/API inaccuracies without needing to modify the underlying ingredient list.
 2. **API Audit Trail**: `meal_items` captures `api_food_id` alongside the user's `original_name`. This allows you to audit the Nutrition API's matches later on if an automatic match was completely wrong.
 3. **Preserving Inputs**: Storing the `raw_input_text` allows you to later tweak your AI parsing prompts and compare historical data parsing against new models.

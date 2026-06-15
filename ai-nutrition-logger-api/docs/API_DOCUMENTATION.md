@@ -136,6 +136,33 @@ Authorization: Bearer <access_token>
 
 ---
 
+### 5. Update User Settings
+
+**PUT** `/api/v1/users/me`
+
+Update current user's daily calorie goal.
+
+**Request Body:**
+```json
+{
+  "daily_calorie_goal": 2500,
+  "sex": "MALE",
+  "age": 30,
+  "height_cm": 180.0,
+  "weight_kg": 80.0,
+  "activity_level": "MODERATE",
+  "goal_direction": "LOSE",
+  "goal_pace": "MODERATE"
+}
+```
+
+All fields except `daily_calorie_goal` are optional. Omitted biometric fields keep their previously saved values (a goal-only update is a valid manual override). Enum and range validation returns `422` on invalid input.
+
+**Response:**
+Returns the updated `UserProfile` object.
+
+---
+
 ### 5. Process Meal Text
 
 **POST** `/api/v1/meals/text`
@@ -253,7 +280,49 @@ Content-Type: multipart/form-data
 
 ---
 
-### 7. Get Meals by Date
+### 7. Update Meal Totals (Manual Override)
+
+**PUT** `/api/v1/meals/{meal_id}/totals`
+
+Update the total macro and calorie values for a meal record. This does not change the individual `meal_items` but overrides the pre-aggregated totals in the `meals` table.
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**URL Parameter:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `meal_id` | UUID | UUID of the meal to update |
+
+**Request Body:**
+```json
+{
+  "total_calories": 520.5,
+  "total_protein": 35.0,
+  "total_carbs": 45.0,
+  "total_fats": 22.0
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `total_calories` | float | Yes | Must be >= 0 |
+| `total_protein` | float | Yes | Must be >= 0 |
+| `total_carbs` | float | Yes | Must be >= 0 |
+| `total_fats` | float | Yes | Must be >= 0 |
+
+**Response (200 OK):**
+Returns the full `ProcessedMealResponse` object with updated totals.
+
+**Error Codes:**
+- `403`: Not authorized to edit this meal
+- `404`: Meal not found
+
+---
+
+### 8. Get Meals by Date
 
 **GET** `/api/v1/meals/date/{target_date}`
 
