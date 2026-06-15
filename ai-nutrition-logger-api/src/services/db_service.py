@@ -275,12 +275,12 @@ class DatabaseManager:
                     weight_kg = COALESCE(?, weight_kg),
                     activity_level = COALESCE(?, activity_level),
                     goal_direction = COALESCE(?, goal_direction),
-                    goal_pace = COALESCE(?, goal_pace),
+                    goal_pace = CASE WHEN ? IS NOT NULL THEN ? ELSE COALESCE(?, goal_pace) END,
                     updated_at = ?
                 WHERE id = ?
             """, (
                 daily_calorie_goal, sex, age, height_cm, weight_kg,
-                activity_level, goal_direction, goal_pace, now, user_id,
+                activity_level, goal_direction, goal_direction, goal_pace, goal_pace, now, user_id,
             ))
             conn.commit()
 

@@ -194,3 +194,40 @@ def test_update_user_profile_preserves_biometrics_on_goal_only_update(test_db_pa
     assert updated["sex"] == "FEMALE"
     assert updated["weight_kg"] == 60.0
     assert updated["activity_level"] == "LIGHT"
+
+
+def test_update_user_profile_clears_pace_when_switching_to_maintain(test_db_path):
+    from src.services.db_service import DatabaseManager
+
+    db = DatabaseManager(db_path=test_db_path)
+    user_id = db.create_user(daily_calorie_goal=2000, email="maintain@example.com")
+    # Start as LOSE / MODERATE
+    db.update_user_profile(
+        user_id, daily_calorie_goal=2000, sex="MALE", age=30,
+        height_cm=180.0, weight_kg=80.0, activity_level="MODERATE",
+        goal_direction="LOSE", goal_pace="MODERATE",
+    )
+    # Switch to MAINTAIN (full submit: goal_direction provided, pace None)
+    updated = db.update_user_profile(
+        user_id, daily_calorie_goal=2200, sex="MALE", age=30,
+        height_cm=180.0, weight_kg=80.0, activity_level="MODERATE",
+        goal_direction="MAINTAIN", goal_pace=None,
+    )
+    assert updated["goal_direction"] == "MAINTAIN"
+    assert updated["goal_pace"] is None  # stale MODERATE must be cleared
+
+
+def test_update_user_profile_goal_only_still_preserves_pace(test_db_path):
+    from src.services.db_service import DatabaseManager
+
+    db = DatabaseManager(db_path=test_db_path)
+    user_id = db.create_user(daily_calorie_goal=2000, email="paceonly@example.com")
+    db.update_user_profile(
+        user_id, daily_calorie_goal=2000, sex="MALE", age=30,
+        height_cm=180.0, weight_kg=80.0, activity_level="MODERATE",
+        goal_direction="LOSE", goal_pace="AGGRESSIVE",
+    )
+    # Goal-only manual override: goal_direction NOT provided -> pace preserved
+    updated = db.update_user_profile(user_id, daily_calorie_goal=1800)
+    assert updated["goal_direction"] == "LOSE"
+    assert updated["goal_pace"] == "AGGRESSIVE"
