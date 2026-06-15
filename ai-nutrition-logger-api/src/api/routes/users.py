@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from src.api import auth
-from src.api.schemas import UserProfile
+from src.api.schemas import UserProfile, UserProfileUpdate
 from src.services.db_service import DatabaseManager
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -20,3 +20,30 @@ def get_current_user_profile(current_user: dict = Depends(auth.get_current_user)
             detail="User not found"
         )
     return user
+
+
+@router.put("/me", response_model=UserProfile)
+def update_current_user_profile(
+    profile_data: UserProfileUpdate,
+    current_user: dict = Depends(auth.get_current_user)
+):
+    """
+    Update current user's profile settings.
+    """
+    updated_user = db.update_user_profile(
+        current_user["user_id"],
+        profile_data.daily_calorie_goal,
+        sex=profile_data.sex,
+        age=profile_data.age,
+        height_cm=profile_data.height_cm,
+        weight_kg=profile_data.weight_kg,
+        activity_level=profile_data.activity_level,
+        goal_direction=profile_data.goal_direction,
+        goal_pace=profile_data.goal_pace,
+    )
+    if not updated_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return updated_user

@@ -11,6 +11,16 @@ from src.config.constants import (
     CALORIE_GOAL_MAX,
     MEAL_TEXT_MAX_LENGTH,
     MEAL_TYPES,
+    SEXES,
+    ACTIVITY_LEVELS,
+    GOAL_DIRECTIONS,
+    GOAL_PACES,
+    AGE_MIN,
+    AGE_MAX,
+    HEIGHT_CM_MIN,
+    HEIGHT_CM_MAX,
+    WEIGHT_KG_MIN,
+    WEIGHT_KG_MAX,
 )
 
 
@@ -45,11 +55,29 @@ class UserProfile(BaseModel):
     id: str
     email: Optional[str] = None
     daily_calorie_goal: int
+    sex: Optional[str] = None
+    age: Optional[int] = None
+    height_cm: Optional[float] = None
+    weight_kg: Optional[float] = None
+    activity_level: Optional[str] = None
+    goal_direction: Optional[str] = None
+    goal_pace: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class UserProfileUpdate(BaseModel):
+    daily_calorie_goal: int = Field(..., ge=CALORIE_GOAL_MIN, le=CALORIE_GOAL_MAX)
+    sex: Optional[str] = Field(None, pattern=f"^({'|'.join(SEXES)})$")
+    age: Optional[int] = Field(None, ge=AGE_MIN, le=AGE_MAX)
+    height_cm: Optional[float] = Field(None, ge=HEIGHT_CM_MIN, le=HEIGHT_CM_MAX)
+    weight_kg: Optional[float] = Field(None, ge=WEIGHT_KG_MIN, le=WEIGHT_KG_MAX)
+    activity_level: Optional[str] = Field(None, pattern=f"^({'|'.join(ACTIVITY_LEVELS)})$")
+    goal_direction: Optional[str] = Field(None, pattern=f"^({'|'.join(GOAL_DIRECTIONS)})$")
+    goal_pace: Optional[str] = Field(None, pattern=f"^({'|'.join(GOAL_PACES)})$")
 
 
 # --- Meal Processing Schemas ---
@@ -61,6 +89,13 @@ class MealTextRequest(BaseModel):
 class MealImageRequest(BaseModel):
     meal_type: str = Field(..., pattern=f"^({'|'.join(MEAL_TYPES)})$")
     meal_description: Optional[str] = Field(None, max_length=MEAL_TEXT_MAX_LENGTH)
+
+
+class MealTotalsUpdateRequest(BaseModel):
+    total_calories: float = Field(..., ge=0)
+    total_protein: float = Field(..., ge=0)
+    total_carbs: float = Field(..., ge=0)
+    total_fats: float = Field(..., ge=0)
 
 
 # --- Food Item Schemas ---
