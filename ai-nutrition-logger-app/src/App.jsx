@@ -1,14 +1,48 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import MealEntry from './components/MealEntry';
 import MealSummary from './components/MealSummary';
 import History from './components/History';
+import Profile from './components/Profile';
+import Onboarding from './components/Onboarding';
+import { authService } from './api/client';
 
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('access_token');
-  if (!token) return <Navigate to="/auth" />;
+  const [isValidating, setIsValidating] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      setIsValidating(false);
+      return;
+    }
+
+    // Validate token with backend
+    authService.getCurrentUser()
+      .then(() => {
+        setIsAuthenticated(true);
+        setIsValidating(false);
+      })
+      .catch(() => {
+        // Token is invalid, remove it
+        localStorage.removeItem('access_token');
+        setIsValidating(false);
+      });
+  }, []);
+
+  if (isValidating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return <Navigate to="/auth" />;
   return children;
 };
 
@@ -21,6 +55,12 @@ function App() {
         </div>
       } />
       
+      <Route path="/onboarding" element={
+        <PrivateRoute>
+          <Onboarding />
+        </PrivateRoute>
+      } />
+
       <Route path="/" element={
         <PrivateRoute>
           <Layout />
@@ -30,25 +70,7 @@ function App() {
         <Route path="add" element={<MealEntry />} />
         <Route path="history" element={<History />} />
         <Route path="summary" element={<MealSummary />} />
-        <Route path="profile" element={
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-4xl font-black font-headline tracking-tighter uppercase border-b-4 border-black inline-block mb-3">Profile</h2>
-              <p className="text-on-surface-variant font-label text-[10px] font-bold uppercase tracking-[0.3em]">User Settings</p>
-            </div>
-            <div className="border-2 border-black bg-white p-8 md:p-10 text-center">
-              <button 
-                className="w-full bg-secondary text-white py-4 px-6 border-2 border-black font-headline font-black text-sm tracking-[0.2em] uppercase transition-all hover:bg-opacity-90 active:scale-[0.98]" 
-                onClick={() => {
-                  localStorage.removeItem('access_token');
-                  window.location.href = '/auth';
-                }}
-              >
-                Log Out
-              </button>
-            </div>
-          </div>
-        } />
+        <Route path="profile" element={<Profile />} />
       </Route>
     </Routes>
   );

@@ -18,11 +18,12 @@ export default function Auth() {
     try {
       if (isLogin) {
         await authService.login(email, password);
+        navigate('/');
       } else {
         await authService.register(email, password);
         await authService.login(email, password); // auto login
+        navigate('/onboarding');
       }
-      navigate('/');
     } catch (err) {
       setError(err.response?.data?.detail || 'Authentication failed');
     } finally {
@@ -42,16 +43,16 @@ export default function Auth() {
               Secure access to your health ledger.
             </p>
           </header>
-          <div className="bg-surface border border-outline/10 p-8 md:p-12">
+          <div className="bg-surface border-2 border-black p-8 md:p-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
             <form className="space-y-8" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <label className="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface font-bold">
                   Account Email
                 </label>
                 <div className="relative group">
-                  <input 
-                    className="w-full bg-surface-variant/30 border border-outline-variant focus:ring-0 focus:border-secondary py-4 px-4 transition-all placeholder:text-on-surface-variant/40 text-on-surface" 
-                    placeholder="email@example.com" 
+                  <input
+                    className="w-full bg-surface-variant/30 border-2 border-black focus:ring-0 focus:border-secondary py-4 px-4 transition-all placeholder:text-on-surface-variant/40 text-on-surface"
+                    placeholder="email@example.com"
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
@@ -64,9 +65,9 @@ export default function Auth() {
                   Security Key
                 </label>
                 <div className="relative group">
-                  <input 
-                    className="w-full bg-surface-variant/30 border border-outline-variant focus:ring-0 focus:border-secondary py-4 px-4 transition-all placeholder:text-on-surface-variant/40 text-on-surface" 
-                    placeholder="••••••••" 
+                  <input
+                    className="w-full bg-surface-variant/30 border-2 border-black focus:ring-0 focus:border-secondary py-4 px-4 transition-all placeholder:text-on-surface-variant/40 text-on-surface"
+                    placeholder="••••••••"
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
@@ -74,12 +75,12 @@ export default function Auth() {
                   />
                 </div>
               </div>
-              
+
               {error && <div className="text-error font-bold text-[10px] uppercase tracking-widest">{error}</div>}
 
               <div className="pt-4 flex flex-col space-y-6">
-                <button 
-                  className="w-full bg-secondary text-on-secondary py-4 px-6 font-bold tracking-widest text-sm uppercase transition-all hover:bg-on-secondary-fixed active:scale-[0.98]" 
+                <button
+                  className="w-full bg-secondary text-on-secondary py-4 px-6 font-bold tracking-widest text-sm uppercase transition-all hover:bg-on-secondary-fixed active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black"
                   type="submit"
                   disabled={loading}
                 >
