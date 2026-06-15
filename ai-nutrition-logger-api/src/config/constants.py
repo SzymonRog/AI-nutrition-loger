@@ -12,7 +12,7 @@ GOOGLE_AI_MODEL_ID = "gemini-3.1-flash-lite-preview"
 # JWT Authentication
 SECRET_KEY_ENV_VAR = "JWT_SECRET_KEY"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 90  # 90 days (~3 months)
 
 # Database
 DB_PATH = "data/processed/nutrition_logger.db"
@@ -30,7 +30,7 @@ MEAL_TYPES = ["BREAKFAST", "LUNCH", "DINNER", "SNACK", "OTHER"]
 DEFAULT_MEAL_TYPE = "SNACK"
 
 # Input Validation
-PASSWORD_MIN_LENGTH = 8
+PASSWORD_MIN_LENGTH = 4
 PASSWORD_MAX_LENGTH = 100
 MEAL_TEXT_MAX_LENGTH = 2000
 
@@ -41,3 +41,14 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 # AI Summary Types
 SUMMARY_TYPE_DAILY = "DAILY"
 SUMMARY_TYPE_WEEKLY = "WEEKLY"
+
+# Calorie Calculator — biometric enums (validation source of truth)
+SEXES = ["MALE", "FEMALE"]
+ACTIVITY_LEVELS = ["SEDENTARY", "LIGHT", "MODERATE", "ACTIVE", "VERY_ACTIVE"]
+GOAL_DIRECTIONS = ["LOSE", "MAINTAIN", "GAIN"]
+GOAL_PACES = ["MILD", "MODERATE", "AGGRESSIVE"]
+
+# Calorie Calculator — biometric field bounds
+AGE_MIN, AGE_MAX = 13, 120
+HEIGHT_CM_MIN, HEIGHT_CM_MAX = 50, 250
+WEIGHT_KG_MIN, WEIGHT_KG_MAX = 20, 400
