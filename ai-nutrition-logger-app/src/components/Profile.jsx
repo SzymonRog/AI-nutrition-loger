@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { authService } from '../api/client';
+import { authService, getErrorMessage } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 import CalorieWizard from './CalorieWizard';
 
@@ -31,18 +31,23 @@ export default function Profile() {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to update profile');
+      setError(getErrorMessage(err, 'Failed to update profile'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleManualSave = async () => {
-    if (!manualGoal || isNaN(manualGoal)) {
+    const n = parseInt(manualGoal, 10);
+    if (!manualGoal || Number.isNaN(n)) {
       setError('Please enter a valid number');
       return;
     }
-    await handleComplete({ daily_calorie_goal: parseInt(manualGoal) });
+    if (n < 500 || n > 10000) {
+      setError('Goal must be between 500 and 10000 kcal');
+      return;
+    }
+    await handleComplete({ daily_calorie_goal: n });
   };
 
   const handleLogout = () => {

@@ -3,7 +3,7 @@ import {
   motion, AnimatePresence, animate, useMotionValue, useTransform,
 } from 'framer-motion';
 import {
-  ACTIVITY_LEVELS, GOAL_DIRECTIONS, GOAL_PACES,
+  ACTIVITY_LEVELS, GOAL_DIRECTIONS, GOAL_PACES, METRIC_BOUNDS,
   computeBMR, computeTDEE, computeGoal, computeMacros,
 } from '../utils/calories';
 
@@ -14,6 +14,11 @@ const slide = {
   center: { x: 0, opacity: 1 },
   exit: (dir) => ({ x: dir > 0 ? -40 : 40, opacity: 0 }),
 };
+
+function inRange(value, bounds) {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= bounds.min && n <= bounds.max;
+}
 
 function StepHeader({ title, subtitle }) {
   return (
@@ -59,7 +64,7 @@ function SexStep({ value, onSelect }) {
 }
 
 function MetricsStep({ form, set }) {
-  const field = (label, key, unit, placeholder) => (
+  const field = (label, key, unit, placeholder, bounds) => (
     <div className="space-y-2">
       <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{label}</label>
       <div className="relative">
@@ -72,15 +77,16 @@ function MetricsStep({ form, set }) {
         />
         <span className="absolute top-1/2 right-4 -translate-y-1/2 text-xs font-black text-black/30 uppercase pointer-events-none">{unit}</span>
       </div>
+      <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant/60">Range: {bounds.min}–{bounds.max} {unit}</span>
     </div>
   );
   return (
     <div>
       <StepHeader title="Your Metrics" subtitle="Age, height and weight" />
       <div className="space-y-4">
-        {field('Age', 'age', 'yrs', '30')}
-        {field('Height', 'heightCm', 'cm', '180')}
-        {field('Weight', 'weightKg', 'kg', '80')}
+        {field('Age', 'age', 'yrs', '30', METRIC_BOUNDS.age)}
+        {field('Height', 'heightCm', 'cm', '180', METRIC_BOUNDS.heightCm)}
+        {field('Weight', 'weightKg', 'kg', '80', METRIC_BOUNDS.weightKg)}
       </div>
     </div>
   );
@@ -243,7 +249,7 @@ export default function CalorieWizard({
   const canAdvance = () => {
     switch (step) {
       case 'SEX': return !!form.sex;
-      case 'METRICS': return Number(form.age) > 0 && Number(form.heightCm) > 0 && Number(form.weightKg) > 0;
+      case 'METRICS': return inRange(form.age, METRIC_BOUNDS.age) && inRange(form.heightCm, METRIC_BOUNDS.heightCm) && inRange(form.weightKg, METRIC_BOUNDS.weightKg);
       case 'ACTIVITY': return !!form.activityLevel;
       case 'GOAL': return form.direction && (form.direction === 'MAINTAIN' || form.pace);
       default: return true;

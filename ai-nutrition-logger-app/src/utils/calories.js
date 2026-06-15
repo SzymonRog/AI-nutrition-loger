@@ -30,6 +30,12 @@ export const GOAL_PACES = {
 export const CALORIE_GOAL_MIN = 500;
 export const CALORIE_GOAL_MAX = 10000;
 
+export const METRIC_BOUNDS = {
+  age: { min: 13, max: 120 },
+  heightCm: { min: 50, max: 250 },
+  weightKg: { min: 20, max: 400 },
+};
+
 export function computeBMR({ sex, age, heightCm, weightKg }) {
   const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
   return sex === 'MALE' ? base + 5 : base - 161;

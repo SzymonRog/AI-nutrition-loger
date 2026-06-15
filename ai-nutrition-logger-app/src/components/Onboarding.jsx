@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CalorieWizard from './CalorieWizard';
-import { authService } from '../api/client';
+import { authService, getErrorMessage } from '../api/client';
 
 export default function Onboarding() {
   const [saving, setSaving] = useState(false);
@@ -15,7 +15,7 @@ export default function Onboarding() {
       await authService.updateProfile(payload);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to save profile');
+      setError(getErrorMessage(err, 'Failed to save profile'));
       setSaving(false);
     }
   };
