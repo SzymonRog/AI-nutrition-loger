@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import {
-  motion, AnimatePresence, animate, useMotionValue, useTransform,
-} from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ACTIVITY_LEVELS, GOAL_DIRECTIONS, GOAL_PACES, METRIC_BOUNDS,
   computeBMR, computeTDEE, computeGoal, computeMacros,
 } from '../utils/calories';
+import { useLang } from '../i18n/LanguageContext';
+import CountUp from './CountUp';
 
 const STEPS = ['SEX', 'METRICS', 'ACTIVITY', 'GOAL', 'RESULT'];
 
@@ -49,11 +49,12 @@ function SelectCard({ selected, onClick, children }) {
 }
 
 function SexStep({ value, onSelect }) {
+  const { t } = useLang();
   return (
     <div>
-      <StepHeader title="Biological Sex" subtitle="Used for the BMR formula" />
+      <StepHeader title={t('wizard.sexTitle')} subtitle={t('wizard.sexSub')} />
       <div className="grid grid-cols-2 gap-4">
-        {[{ k: 'MALE', l: 'Male' }, { k: 'FEMALE', l: 'Female' }].map((o) => (
+        {[{ k: 'MALE', l: t('wizard.male') }, { k: 'FEMALE', l: t('wizard.female') }].map((o) => (
           <SelectCard key={o.k} selected={value === o.k} onClick={() => onSelect(o.k)}>
             <span className="text-2xl font-black uppercase tracking-tighter">{o.l}</span>
           </SelectCard>
@@ -64,6 +65,7 @@ function SexStep({ value, onSelect }) {
 }
 
 function MetricsStep({ form, set }) {
+  const { t } = useLang();
   const field = (label, key, unit, placeholder, bounds) => (
     <div className="space-y-2">
       <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{label}</label>
@@ -73,35 +75,36 @@ function MetricsStep({ form, set }) {
           value={form[key]}
           onChange={(e) => set({ [key]: e.target.value })}
           placeholder={placeholder}
-          className="w-full bg-surface-container-low border-2 border-black p-4 text-2xl font-black tracking-tighter focus:bg-white outline-none"
+          className="w-full bg-surface-container-low border-2 border-black p-4 pr-16 text-2xl font-black tracking-tighter focus:bg-white outline-none"
         />
         <span className="absolute top-1/2 right-4 -translate-y-1/2 text-xs font-black text-black/30 uppercase pointer-events-none">{unit}</span>
       </div>
-      <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant/60">Range: {bounds.min}–{bounds.max} {unit}</span>
+      <span className="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant/60">{t('wizard.range', { min: bounds.min, max: bounds.max, unit })}</span>
     </div>
   );
   return (
     <div>
-      <StepHeader title="Your Metrics" subtitle="Age, height and weight" />
+      <StepHeader title={t('wizard.metricsTitle')} subtitle={t('wizard.metricsSub')} />
       <div className="space-y-4">
-        {field('Age', 'age', 'yrs', '30', METRIC_BOUNDS.age)}
-        {field('Height', 'heightCm', 'cm', '180', METRIC_BOUNDS.heightCm)}
-        {field('Weight', 'weightKg', 'kg', '80', METRIC_BOUNDS.weightKg)}
+        {field(t('wizard.age'), 'age', t('wizard.unitYrs'), '30', METRIC_BOUNDS.age)}
+        {field(t('wizard.height'), 'heightCm', 'cm', '180', METRIC_BOUNDS.heightCm)}
+        {field(t('wizard.weight'), 'weightKg', 'kg', '80', METRIC_BOUNDS.weightKg)}
       </div>
     </div>
   );
 }
 
 function ActivityStep({ value, onSelect }) {
+  const { t } = useLang();
   return (
     <div>
-      <StepHeader title="Activity Level" subtitle="How often do you train?" />
+      <StepHeader title={t('wizard.activityTitle')} subtitle={t('wizard.activitySub')} />
       <div className="space-y-3">
         {ACTIVITY_LEVELS.map((l) => (
           <SelectCard key={l.key} selected={value === l.key} onClick={() => onSelect(l.key)}>
-            <div className="flex justify-between items-center">
-              <span className="text-base font-black uppercase tracking-tight">{l.label}</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">{l.desc}</span>
+            <div className="flex justify-between items-center gap-3">
+              <span className="text-base font-black uppercase tracking-tight">{t(`wizard.activity.${l.key}.label`)}</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 text-right shrink-0">{t(`wizard.activity.${l.key}.desc`)}</span>
             </div>
           </SelectCard>
         ))}
@@ -111,14 +114,15 @@ function ActivityStep({ value, onSelect }) {
 }
 
 function GoalStep({ form, set }) {
+  const { t } = useLang();
   const paces = GOAL_PACES[form.direction] || [];
   return (
     <div>
-      <StepHeader title="Your Goal" subtitle="Pick a direction and pace" />
+      <StepHeader title={t('wizard.goalTitle')} subtitle={t('wizard.goalSub')} />
       <div className="grid grid-cols-3 gap-3 mb-6">
         {GOAL_DIRECTIONS.map((d) => (
           <SelectCard key={d.key} selected={form.direction === d.key} onClick={() => { if (form.direction !== d.key) set({ direction: d.key, pace: '' }); }}>
-            <span className="text-sm font-black uppercase tracking-tight">{d.label}</span>
+            <span className="text-sm font-black uppercase tracking-tight">{t(`wizard.direction.${d.key}`)}</span>
           </SelectCard>
         ))}
       </div>
@@ -130,12 +134,12 @@ function GoalStep({ form, set }) {
             exit={{ opacity: 0, height: 0 }}
             className="space-y-3 overflow-hidden"
           >
-            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Pace</label>
+            <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('wizard.pace')}</label>
             {paces.map((p) => (
               <SelectCard key={p.key} selected={form.pace === p.key} onClick={() => set({ pace: p.key })}>
-                <div className="flex justify-between items-center">
-                  <span className="text-base font-black uppercase tracking-tight">{p.label}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">{p.desc}</span>
+                <div className="flex justify-between items-center gap-3">
+                  <span className="text-base font-black uppercase tracking-tight">{t(`wizard.paceOpt.${p.key}.label`)}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 text-right shrink-0">{t(`wizard.paceOpt.${p.key}.desc`)}</span>
                 </div>
               </SelectCard>
             ))}
@@ -146,29 +150,20 @@ function GoalStep({ form, set }) {
   );
 }
 
-function CountUp({ value }) {
-  const mv = useMotionValue(0);
-  const rounded = useTransform(mv, (v) => Math.round(v));
-  useEffect(() => {
-    const controls = animate(mv, value, { duration: 1.0, ease: 'easeOut' });
-    return controls.stop;
-  }, [value, mv]);
-  return <motion.span>{rounded}</motion.span>;
-}
-
 function ResultStep({ result }) {
+  const { t } = useLang();
   if (!result) {
-    return <p className="text-sm font-bold uppercase tracking-widest">Complete previous steps...</p>;
+    return <p className="text-sm font-bold uppercase tracking-widest">{t('wizard.completePrevious')}</p>;
   }
   const { goal, macros } = result;
   const bars = [
-    { label: 'Protein', g: macros.proteinG, pct: ((macros.proteinG * 4) / goal) * 100 },
-    { label: 'Carbs', g: macros.carbsG, pct: ((macros.carbsG * 4) / goal) * 100 },
-    { label: 'Fats', g: macros.fatsG, pct: ((macros.fatsG * 9) / goal) * 100 },
+    { label: t('dashboard.protein'), g: macros.proteinG, pct: ((macros.proteinG * 4) / goal) * 100 },
+    { label: t('dashboard.carbs'), g: macros.carbsG, pct: ((macros.carbsG * 4) / goal) * 100 },
+    { label: t('dashboard.fats'), g: macros.fatsG, pct: ((macros.fatsG * 9) / goal) * 100 },
   ];
   return (
     <div className="text-center">
-      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">Your Daily Target</p>
+      <p className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">{t('wizard.dailyTarget')}</p>
       <div className="my-4 flex items-end justify-center gap-2">
         <span className="text-7xl font-black tracking-tighter"><CountUp value={goal} /></span>
         <span className="text-2xl font-black text-black/30 mb-2 uppercase">kcal</span>
@@ -197,6 +192,7 @@ function ResultStep({ result }) {
 export default function CalorieWizard({
   initialValues = {}, onComplete, onSkip, saving = false, mode = 'onboarding',
 }) {
+  const { t } = useLang();
   const [stepIndex, setStepIndex] = useState(0);
   const [dir, setDir] = useState(1);
   const [form, setForm] = useState({
@@ -308,7 +304,7 @@ export default function CalorieWizard({
             disabled={stepIndex === 0}
             className="text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:underline underline-offset-4"
           >
-            Back
+            {t('wizard.back')}
           </button>
 
           {onSkip && stepIndex === 0 && (
@@ -316,7 +312,7 @@ export default function CalorieWizard({
               onClick={onSkip}
               className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant hover:underline underline-offset-4"
             >
-              Skip for now
+              {t('wizard.skip')}
             </button>
           )}
 
@@ -326,7 +322,7 @@ export default function CalorieWizard({
               disabled={!canAdvance()}
               className="bg-black text-white py-3 px-8 border-2 border-black font-black text-xs tracking-widest uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-30"
             >
-              Next
+              {t('wizard.next')}
             </button>
           ) : (
             <button
@@ -334,7 +330,7 @@ export default function CalorieWizard({
               disabled={saving || !result}
               className="bg-secondary text-on-secondary py-3 px-8 border-2 border-black font-black text-xs tracking-widest uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50"
             >
-              {saving ? 'Saving...' : (mode === 'onboarding' ? 'Start Tracking' : 'Save Goal')}
+              {saving ? t('common.saving') : (mode === 'onboarding' ? t('wizard.startTracking') : t('wizard.saveGoal'))}
             </button>
           )}
         </div>
