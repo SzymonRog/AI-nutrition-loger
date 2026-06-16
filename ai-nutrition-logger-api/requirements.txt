@@ -1,5 +1,6 @@
 pydantic
 google-genai
+google-api-core
 requests
 python-dotenv
 fastapi
