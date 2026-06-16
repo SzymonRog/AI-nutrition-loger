@@ -50,8 +50,8 @@ export default function Profile() {
     await handleComplete({ daily_calorie_goal: n });
   };
 
-  const handleLogout = () => {
-    authService.logout();
+  const handleLogout = async () => {
+    await authService.logout();
     navigate('/auth');
   };
 

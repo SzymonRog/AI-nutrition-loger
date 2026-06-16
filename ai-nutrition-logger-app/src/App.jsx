@@ -8,30 +8,30 @@ import MealSummary from './components/MealSummary';
 import History from './components/History';
 import Profile from './components/Profile';
 import Onboarding from './components/Onboarding';
-import { authService } from './api/client';
+import { supabase } from './lib/supabaseClient';
 
 const PrivateRoute = ({ children }) => {
   const [isValidating, setIsValidating] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      setIsValidating(false);
-      return;
-    }
+    let active = true;
 
-    // Validate token with backend
-    authService.getCurrentUser()
-      .then(() => {
-        setIsAuthenticated(true);
-        setIsValidating(false);
-      })
-      .catch(() => {
-        // Token is invalid, remove it
-        localStorage.removeItem('access_token');
-        setIsValidating(false);
-      });
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      setIsAuthenticated(!!data.session);
+      setIsValidating(false);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      setIsAuthenticated(!!session);
+    });
+
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   if (isValidating) {

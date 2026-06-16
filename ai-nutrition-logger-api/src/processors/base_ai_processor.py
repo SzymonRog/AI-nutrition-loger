@@ -6,9 +6,11 @@ import os
 from typing import Optional, List, Dict, Any, Union
 
 from google import genai
+from google.api_core import exceptions as google_exceptions
 
 from src.config.constants import GOOGLE_AI_MODEL_ID
 from src.models.nutrition_models import FoodMacros
+from src.core.exceptions import AIServiceError
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +56,9 @@ Return ONLY a JSON object:
         return self._call_and_parse(prompt)
 
     def _call_and_parse(self, prompt: str) -> FoodMacros:
-        """Generate content and parse macros JSON. Returns zeros on failure."""
+        """Generate content and parse macros JSON. Raises exception on failure."""
         if not self.client:
-            return FoodMacros(calories=0, protein=0, carbs=0, fats=0)
+            raise RuntimeError("AI client not initialized. Check GOOGLE_API_KEY.")
 
         try:
             response = self.client.models.generate_content(
@@ -65,9 +67,15 @@ Return ONLY a JSON object:
             )
             data = self._parse_json_response(response.text)
             return FoodMacros(**data)
+        except google_exceptions.ServiceUnavailable as e:
+            logger.error(f"AI service unavailable: {str(e)}")
+            raise AIServiceError(f"AI service is currently unavailable: {str(e)}", status_code=503)
+        except google_exceptions.ResourceExhausted as e:
+            logger.error(f"AI service rate limit exceeded: {str(e)}")
+            raise AIServiceError(f"AI service is busy. Please try again later.", status_code=503)
         except Exception as e:
             logger.error(f"Error estimating nutrition: {str(e)}")
-            return FoodMacros(calories=0, protein=0, carbs=0, fats=0)
+            raise  # Propagate other errors
 
     def select_best_match(self, original_item: str, candidates: List[Dict[str, Any]]) -> Optional[Union[str, int]]:
         """
@@ -105,9 +113,15 @@ Return ONLY a JSON object:
             )
             result = response.text.strip()
             return result if result != "NONE" else None
+        except google_exceptions.ServiceUnavailable as e:
+            logger.error(f"AI service unavailable: {str(e)}")
+            raise AIServiceError(f"AI service is currently unavailable: {str(e)}", status_code=503)
+        except google_exceptions.ResourceExhausted as e:
+            logger.error(f"AI service rate limit exceeded: {str(e)}")
+            raise AIServiceError(f"AI service is busy. Please try again later.", status_code=503)
         except Exception as e:
             logger.error(f"Error selecting best match: {str(e)}")
-            return None
+            raise
 
     def generate_meal_title(self, items: List[Any]) -> str:
         """
@@ -144,6 +158,12 @@ Return ONLY a JSON object:
                 contents=prompt
             )
             return response.text.strip().replace('"', '')
+        except google_exceptions.ServiceUnavailable as e:
+            logger.error(f"AI service unavailable: {str(e)}")
+            raise AIServiceError(f"AI service is currently unavailable: {str(e)}", status_code=503)
+        except google_exceptions.ResourceExhausted as e:
+            logger.error(f"AI service rate limit exceeded: {str(e)}")
+            raise AIServiceError(f"AI service is busy. Please try again later.", status_code=503)
         except Exception as e:
             logger.error(f"Error generating meal title: {str(e)}")
-            return item_names[0].capitalize() if item_names else "New Meal"
+            raise

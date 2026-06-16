@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 # Load environment variables from .env file
 load_dotenv()
 
-from src.api.routes import auth, meals, users
+from src.api.routes import meals, users
 
 
 @asynccontextmanager
@@ -53,7 +53,6 @@ def health_check():
 
 
 # Include routers
-app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(meals.router, prefix="/api/v1")
 

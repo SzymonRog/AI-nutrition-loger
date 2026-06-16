@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { mealService } from '../api/client';
+import { getMealIcon } from '../constants/mealTypeIcons';
 
 export default function History() {
+  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -37,8 +40,8 @@ export default function History() {
 
   // Group meals by date
   const groupedMeals = history.reduce((groups, meal) => {
-    const date = new Date(meal.logged_at).toLocaleDateString('en-US', { 
-      weekday: 'long', month: 'short', day: 'numeric' 
+    const date = new Date(meal.logged_at).toLocaleDateString('en-US', {
+      weekday: 'long', month: 'short', day: 'numeric'
     });
     if (!groups[date]) {
       groups[date] = [];
@@ -69,27 +72,34 @@ export default function History() {
               <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant bg-surface-container px-2 py-1 inline-block border border-black">
                 {date}
               </h3>
-              <div className="border-2 border-black divide-y-2 divide-black overflow-hidden">
+              <div className="border-2 border-black divide-y-2 divide-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 {meals.map(meal => (
-                  <div key={meal.id} className="flex items-center justify-between p-6 bg-white group hover:bg-surface-container-low transition-colors">
+                  <div
+                    key={meal.id}
+                    onClick={() => navigate('/summary', { state: { meal } })}
+                    className="flex items-center justify-between p-6 bg-white group hover:bg-surface-container-low transition-colors cursor-pointer"
+                  >
                     <div className="flex items-center gap-5">
-                      <div className="w-12 h-12 border-2 border-black flex items-center justify-center bg-white shrink-0">
-                        <span className="material-symbols-outlined text-secondary">restaurant</span>
+                      <div className="w-12 h-12 border-2 border-black flex items-center justify-center bg-white shrink-0 group-hover:bg-secondary group-hover:text-white transition-colors">
+                        <span className="material-symbols-outlined">{getMealIcon(meal.meal_type)}</span>
                       </div>
                       <div>
                         <p className="text-sm font-black uppercase tracking-tight">{meal.meal_title || meal.meal_type}</p>
                         <p className="text-[10px] text-on-surface-variant font-bold uppercase mt-0.5">
-                          {meal.meal_type} • {new Date(meal.logged_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} • {meal.items?.length || 0} items
+                          {meal.meal_type} • {new Date(meal.logged_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {meal.items?.length || 0} items
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-6">
                       <div className="text-right shrink-0">
                         <p className="text-xl font-black">{Math.round(meal.total_calories)} <span className="text-[10px] text-secondary">KCAL</span></p>
                       </div>
-                      <button 
-                        onClick={() => setDeleteId(meal.id)}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteId(meal.id);
+                        }}
                         className="p-2 text-on-surface-variant hover:text-error transition-colors"
                       >
                         <span className="material-symbols-outlined">delete</span>
@@ -113,13 +123,13 @@ export default function History() {
               Are you sure you want to remove this entry from your ledger? This action cannot be undone.
             </p>
             <div className="grid grid-cols-2 gap-4">
-              <button 
+              <button
                 onClick={() => setDeleteId(null)}
                 className="py-4 border-2 border-black font-black text-[10px] uppercase tracking-widest hover:bg-surface-container transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleDelete}
                 className="py-4 bg-error text-white border-2 border-black font-black text-[10px] uppercase tracking-widest hover:bg-opacity-90 transition-colors"
               >

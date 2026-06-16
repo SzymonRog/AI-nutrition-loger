@@ -19,6 +19,8 @@ def get_current_user_profile(current_user: dict = Depends(auth.get_current_user)
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
+    # Email lives in Supabase Auth (auth.users), not the profiles row.
+    user["email"] = current_user.get("email")
     return user
 
 
@@ -46,4 +48,5 @@ def update_current_user_profile(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found"
         )
+    updated_user["email"] = current_user.get("email")
     return updated_user

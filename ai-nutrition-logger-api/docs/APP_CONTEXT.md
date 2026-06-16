@@ -11,7 +11,8 @@
 3. **Nutritional API Integration** - The application uses a nutrition API to search for the extracted food items, passing along the specific identified quantities to get accurate data.
 4. **Macro Fetching & Database Logging** - Nutritional macros (calories, protein, carbs, fats) are fetched from the API for each matched item and added to the application's Database for historical tracking.
 5. **Results Display** - The detailed breakdown of food items, quantities, and their corresponding nutritional information is displayed to the user.
-6. **AI Summaries** - The application generates AI-powered summaries of the user's nutritional intake for both the day and the week, offering personalized insights.
+7. **Manual Macro Overrides** - Users have the power to manually adjust the total calories and macronutrients of any logged meal, allowing for corrections when AI estimations or API data are slightly off.
+8. **AI Summaries** - The application generates AI-powered summaries of the user's nutritional intake for both the day and the week, offering personalized insights.
 
 ## Target Users
 

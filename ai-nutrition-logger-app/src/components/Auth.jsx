@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { authService } from '../api/client';
+import { authService, getErrorMessage } from '../api/client';
 import { useNavigate } from 'react-router-dom';
 
 export default function Auth() {
@@ -25,7 +25,7 @@ export default function Auth() {
         navigate('/onboarding');
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Authentication failed');
+      setError(getErrorMessage(err, 'Authentication failed'));
     } finally {
       setLoading(false);
     }

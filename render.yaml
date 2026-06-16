@@ -1,0 +1,22 @@
+# Render Blueprint for the AI Nutrition Logger backend.
+# Deploy: Render Dashboard → New → Blueprint → point at this repo.
+# Set the secret values (sync: false) in the Render dashboard after creation.
+services:
+  - type: web
+    name: ai-nutrition-logger-api
+    runtime: docker
+    rootDir: ai-nutrition-logger-api
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        value: https://pwszfflxgmnehiftetww.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: USDA_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

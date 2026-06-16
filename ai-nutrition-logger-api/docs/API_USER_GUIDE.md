@@ -14,6 +14,7 @@ A step-by-step guide to using the AI Nutrition Logger API.
 6. [Estimating Calories from Images](#estimating-calories-from-images)
 7. [Viewing Your Meal History](#viewing-your-meal-history)
 8. [Understanding the Response Data](#understanding-the-response-data)
+9. [Editing Meal Totals (Manual Overrides)](#editing-meal-totals-manual-overrides)
 
 ---
 
@@ -458,3 +459,36 @@ curl -X GET "http://localhost:8000/api/v1/meals/date/2026-04-02" \
 ### Empty meal items
 - The AI couldn't identify food in the text/image
 - Try being more specific in your descriptions
+
+---
+
+## Editing Meal Totals (Manual Overrides)
+
+Sometimes the AI extraction or the USDA database might be slightly off. You can manually override the total macros for any meal you own.
+
+### The Endpoint
+
+**PUT** `/api/v1/meals/{meal_id}/totals`
+
+### Example Request
+
+```bash
+curl -X PUT "http://localhost:8000/api/v1/meals/a1b2c3d4.../totals" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "total_calories": 480,
+    "total_protein": 30,
+    "total_carbs": 50,
+    "total_fats": 18
+  }'
+```
+
+### When to Use This
+
+- **Expert Knowledge**: You know exactly how many calories were in your homemade dish.
+- **AI Error**: The AI estimated a "large pizza" but you only had a small slice.
+- **Label Accuracy**: You have the actual nutrition label from the packaging.
+
+> [!IMPORTANT]
+> Manually updating the totals **only** affects the summary values in the `meals` table. It does not delete or modify the individual `items` associated with the meal, so you still have the record of what ingredients were mapped.

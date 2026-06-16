@@ -1,8 +1,10 @@
 import json
 import logging
 from typing import List, Dict, Any, Optional
+from google.api_core import exceptions as google_exceptions
 from src.models.nutrition_models import ExtractedFoodItem, FoodMacros
 from src.processors.base_ai_processor import BaseAIProcessor
+from src.core.exceptions import AIServiceError
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +77,15 @@ class VisionAIProcessor(BaseAIProcessor):
 
             return extracted
 
+        except google_exceptions.ServiceUnavailable as e:
+            logger.error(f"AI service unavailable: {str(e)}")
+            raise AIServiceError(f"AI service is currently unavailable: {str(e)}", status_code=503)
+        except google_exceptions.ResourceExhausted as e:
+            logger.error(f"AI service rate limit exceeded: {str(e)}")
+            raise AIServiceError(f"AI service is busy. Please try again later.", status_code=503)
         except Exception as e:
             logger.error(f"Error analyzing image: {str(e)}")
-            return []
+            raise  # Propagate other errors
 
     def estimate_nutrition(self, item: ExtractedFoodItem) -> FoodMacros:
         """

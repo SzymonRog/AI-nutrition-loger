@@ -24,16 +24,16 @@ export default function MealEntry() {
   const [step, setStep] = useState(0); // 0: Category, 1: Method/Input
   const [selectedType, setSelectedType] = useState(null);
   const [inputMethod, setInputMethod] = useState(null); // 'TEXT', 'CAM'
-  
+
   const [textInput, setTextInput] = useState('');
   const [mealDescription, setMealDescription] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  
+
   const [loading, setLoading] = useState(false);
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
   const [error, setError] = useState('');
-  
+
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -68,6 +68,19 @@ export default function MealEntry() {
     }
   };
 
+  const getErrorMessage = (err) => {
+    const status = err.response?.status;
+    const detail = err.response?.data?.detail;
+
+    if (status === 503) {
+      return 'AI model is currently busy. Please try again later.';
+    } else if (status === 500) {
+      return detail || 'An error occurred while processing your meal. Please try again.';
+    } else {
+      return detail || 'Failed to analyze meal. Please try again.';
+    }
+  };
+
   const handleTextSubmit = async () => {
     if (!textInput.trim()) {
       setError('Please describe your meal.');
@@ -81,7 +94,7 @@ export default function MealEntry() {
       const response = await mealService.processText(textInput, selectedType);
       navigate('/summary', { state: { meal: response } });
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to analyze meal');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -97,7 +110,7 @@ export default function MealEntry() {
       const response = await mealService.processImage(selectedFile, selectedType, mealDescription);
       navigate('/summary', { state: { meal: response } });
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to analyze image');
+      setError(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -141,7 +154,7 @@ export default function MealEntry() {
               <button
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.id)}
-                className="group flex flex-col items-center justify-center bg-white high-contrast-border aspect-square transition-all hover:bg-black hover:text-white btn-active-state"
+                className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-all hover:bg-black hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 <span className="material-symbols-outlined text-4xl mb-4">{cat.icon}</span>
                 <span className="text-[10px] font-black tracking-[0.3em] uppercase">{cat.label}</span>
@@ -155,15 +168,15 @@ export default function MealEntry() {
           <div className="grid grid-cols-2 gap-4 scale-in-center">
             <button
               onClick={() => setInputMethod('TEXT')}
-              className="group flex flex-col items-center justify-center bg-white high-contrast-border aspect-square transition-all hover:bg-black hover:text-white btn-active-state"
+              className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-all hover:bg-black hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
               <span className="material-symbols-outlined text-4xl mb-4">edit_note</span>
               <span className="text-[10px] font-black tracking-[0.3em] uppercase">Describe</span>
             </button>
-            
+
             <button
               onClick={() => fileInputRef.current.click()}
-              className="group flex flex-col items-center justify-center bg-white high-contrast-border aspect-square transition-all hover:bg-black hover:text-white btn-active-state"
+              className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-all hover:bg-black hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
               <span className="material-symbols-outlined text-4xl mb-4">photo_camera</span>
               <span className="text-[10px] font-black tracking-[0.3em] uppercase">Photo</span>
@@ -175,9 +188,9 @@ export default function MealEntry() {
         {/* Text Input State */}
         {step === 1 && inputMethod === 'TEXT' && (
           <div className="space-y-6 scale-in-center">
-             <div className="high-contrast-border bg-[#f0f5f1] p-6 relative">
-              <textarea 
-                className="w-full h-48 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-relaxed text-lg font-medium outline-none" 
+            <div className="high-contrast-border neo-shadow bg-[#f0f5f1] p-6 relative">
+              <textarea
+                className="w-full h-48 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-relaxed text-lg font-medium outline-none"
                 placeholder="E.g., 3 eggs and one avocado"
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
@@ -187,13 +200,13 @@ export default function MealEntry() {
                 <span className="material-symbols-outlined text-black/20 text-4xl">edit_note</span>
               </div>
             </div>
-            
+
             {error && <div className="text-error font-bold text-[10px] uppercase tracking-widest">{error}</div>}
 
-            <button 
+            <button
               onClick={handleTextSubmit}
               disabled={loading}
-              className="w-full bg-secondary text-white py-5 px-6 high-contrast-border font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 active:scale-[0.98] transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              className="w-full bg-secondary text-white py-5 px-6 high-contrast-border font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all neo-shadow"
             >
               <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>
                 {loading ? 'progress_activity' : 'auto_awesome'}
@@ -207,7 +220,7 @@ export default function MealEntry() {
         {step === 1 && inputMethod === 'CAM' && (
           <div className="space-y-6 scale-in-center">
             {imagePreview && (
-              <div className="high-contrast-border bg-black aspect-video overflow-hidden">
+              <div className="high-contrast-border neo-shadow bg-black aspect-video overflow-hidden">
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover opacity-90" />
               </div>
             )}
@@ -216,31 +229,31 @@ export default function MealEntry() {
               <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-1">
                 Portion Notes / Corrections (Optional)
               </label>
-              <div className="high-contrast-border bg-[#f0f5f1] p-4 relative">
-                <textarea 
-                  className="w-full h-24 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-tight text-sm font-medium outline-none" 
+              <div className="high-contrast-border neo-shadow bg-[#f0f5f1] p-4 relative">
+                <textarea
+                  className="w-full h-24 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-tight text-sm font-medium outline-none"
                   placeholder="E.g., Large portion of rice, extra butter on the side..."
                   value={mealDescription}
                   onChange={(e) => setMealDescription(e.target.value)}
                 />
               </div>
             </div>
-            
+
             {error && <div className="text-error font-bold text-[10px] uppercase tracking-widest">{error}</div>}
 
-            <button 
+            <button
               onClick={handleImageSubmit}
               disabled={loading}
-              className="w-full bg-secondary text-white py-5 px-6 high-contrast-border font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 active:scale-[0.98] transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              className="w-full bg-secondary text-white py-5 px-6 high-contrast-border font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all neo-shadow"
             >
               <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>
                 {loading ? 'progress_activity' : 'auto_awesome'}
               </span>
               {loading ? FUNNY_MESSAGES[loadingTextIndex] : 'Submit Photo'}
             </button>
-            
-            <button 
-              onClick={() => { setSelectedFile(null); setImagePreview(null); setInputMethod(null); }} 
+
+            <button
+              onClick={() => { setSelectedFile(null); setImagePreview(null); setInputMethod(null); }}
               className="w-full text-[10px] font-black uppercase tracking-[0.2em] py-2 opacity-60 hover:opacity-100"
             >
               Change Method

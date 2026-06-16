@@ -9,13 +9,7 @@ USDA_NUTRIENT_PER_100G = 100.0
 # Google AI
 GOOGLE_AI_MODEL_ID = "gemini-3.1-flash-lite-preview"
 
-# JWT Authentication
-SECRET_KEY_ENV_VAR = "JWT_SECRET_KEY"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 90  # 90 days (~3 months)
-
-# Database
-DB_PATH = "data/processed/nutrition_logger.db"
+# Authentication is handled by Supabase Auth (see src/api/auth.py).
 
 # User Defaults
 DEFAULT_DAILY_CALORIE_GOAL = 2000
@@ -35,7 +29,6 @@ PASSWORD_MAX_LENGTH = 100
 MEAL_TEXT_MAX_LENGTH = 2000
 
 # Image Upload
-IMAGE_UPLOAD_DIR = "data/raw"
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 # AI Summary Types

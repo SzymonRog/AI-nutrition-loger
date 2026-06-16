@@ -60,7 +60,7 @@ class AITextProcessor(BaseAIProcessor):
             return extracted
         except Exception as e:
             logger.error(f"Error extracting food items: {str(e)}")
-            return []
+            raise  # Propagate the error instead of returning empty list
 
     def estimate_nutrition(self, item: ExtractedFoodItem) -> FoodMacros:
         """

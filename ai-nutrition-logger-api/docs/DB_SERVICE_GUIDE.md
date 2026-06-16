@@ -70,6 +70,18 @@ Retrieves all meals logged on a specific calendar day.
     *   `target_date` (str): Date string in `"YYYY-MM-DD"` format.
 *   **Returns:** `List[Dict]` of meals found for that day.
 
+### `update_meal_totals`
+Manually overrides the pre-aggregated nutritional totals for a specific meal.
+
+*   **Arguments:**
+    *   `user_id` (str): The UUID of the owner (for validation).
+    *   `meal_id` (str): The UUID of the meal to update.
+    *   `calories` (float): New total calories.
+    *   `protein` (float): New total protein.
+    *   `carbs` (float): New total carbs.
+    *   `fats` (float): New total fats.
+*   **Returns:** `bool` (`True` if the update was successful and the user is the owner).
+
 ---
 
 ## AI Summaries

@@ -1,81 +1,44 @@
-import os
-from datetime import datetime, timedelta
-from typing import Optional
+"""Authentication via Supabase Auth.
+
+The frontend signs in directly with Supabase and sends the resulting JWT as a
+Bearer token. This module verifies that token against Supabase and exposes the
+authenticated user to the routes. There are no passwords or JWTs minted here —
+Supabase Auth owns all of that.
+"""
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.config.constants import SECRET_KEY_ENV_VAR, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from src.services.supabase_client import get_supabase
 
-# Configuration
-SECRET_KEY = os.getenv(SECRET_KEY_ENV_VAR)
-if not SECRET_KEY:
-    raise RuntimeError(
-        f"JWT_SECRET_KEY environment variable is not set. "
-        f"Generate one with: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
-    )
+bearer_scheme = HTTPBearer(auto_error=False)
 
-# Password hashing (sha256_crypt avoids bcrypt initialization bugs on Python 3.13)
-pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
-
-# OAuth2 scheme
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+_CREDENTIALS_EXCEPTION = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a plain password against its hash."""
-    # Bcrypt has a 72-byte limit and throws ValueError if exceeded in some environments.
-    # We identify the scheme and truncate for legacy bcrypt hashes.
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+) -> dict:
+    """Validate the Supabase access token and return the authenticated user.
+
+    Returns a dict shaped like the rest of the app expects:
+    ``{"user_id": <uuid>, "email": <str>}``.
+    """
+    if credentials is None or not credentials.credentials:
+        raise _CREDENTIALS_EXCEPTION
+
+    token = credentials.credentials
     try:
-        if pwd_context.identify(hashed_password) == "bcrypt":
-            # Truncate to 72 bytes to avoid ValueError from bcrypt
-            plain_password = plain_password[:72]
-        return pwd_context.verify(plain_password, hashed_password)
-    except ValueError:
-        # Fallback in case of unexpected errors during verification
-        return False
+        response = get_supabase().auth.get_user(token)
+    except Exception:
+        raise _CREDENTIALS_EXCEPTION
 
+    user = getattr(response, "user", None)
+    if user is None or not getattr(user, "id", None):
+        raise _CREDENTIALS_EXCEPTION
 
-def get_password_hash(password: str) -> str:
-    """Generate password hash."""
-    return pwd_context.hash(password)
-
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Create JWT access token."""
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-
-def decode_token(token: str) -> dict:
-    """Decode and verify JWT token."""
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
-    """Dependency to get current authenticated user."""
-    payload = decode_token(token)
-    user_id: str = payload.get("sub")
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return {"user_id": user_id, "email": payload.get("email")}
+    return {"user_id": user.id, "email": user.email}

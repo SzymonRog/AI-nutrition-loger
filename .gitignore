@@ -49,3 +49,6 @@ logs/
 # Temp
 /tmp/
 check_db.py
+
+# Claude
+.claude/

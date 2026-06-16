@@ -59,6 +59,9 @@ class NutritionLoggingWorkflow:
         # 1. Extract individual items from text
         extracted_items = self.ai.analyze_meal_text(meal_text)
 
+        if not extracted_items:
+            raise ValueError("No food items could be extracted from the meal description. Please provide more details.")
+
         processed_items: List[ProcessedFoodItem] = []
 
         # 2. Process each extracted item

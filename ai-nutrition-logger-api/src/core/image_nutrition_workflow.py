@@ -63,14 +63,7 @@ class ImageNutritionWorkflow:
 
         if not extracted_items:
             logger.warning("No food items identified from image")
-            return ProcessedMeal(
-                items=[],
-                total_calories=0,
-                total_protein=0,
-                total_carbs=0,
-                total_fats=0,
-                raw_input_text=f"[Image: {image_path}]"
-            )
+            raise ValueError("No food items could be identified from the image. Please try a clearer photo or add a description.")
 
         processed_items: List[ProcessedFoodItem] = []
 

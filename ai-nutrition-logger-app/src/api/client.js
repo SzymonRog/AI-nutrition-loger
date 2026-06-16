@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { supabase } from '../lib/supabaseClient';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -9,23 +10,22 @@ export const apiClient = axios.create({
   },
 });
 
-// Intercept requests to inject the token
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+// Inject the current Supabase access token on every request.
+apiClient.interceptors.request.use(async (config) => {
+  const { data } = await supabase.auth.getSession();
+  const token = data?.session?.access_token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-// Intercept responses to handle 401 errors
+// On 401, clear the Supabase session and send the user back to login.
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear invalid token
-      localStorage.removeItem('access_token');
-      // Redirect to login page
+      await supabase.auth.signOut();
       window.location.href = '/auth';
     }
     return Promise.reject(error);
@@ -34,27 +34,26 @@ apiClient.interceptors.response.use(
 
 export const authService = {
   login: async (email, password) => {
-    const response = await apiClient.post('/auth/login', { email, password });
-    if (response.data.access_token) {
-      localStorage.setItem('access_token', response.data.access_token);
-    }
-    return response.data;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
   },
-  register: async (email, password, daily_calorie_goal = 2000) => {
-    const response = await apiClient.post('/auth/register', { email, password, daily_calorie_goal });
-    return response.data;
+  register: async (email, password) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+    return data;
   },
   getCurrentUser: async () => {
     const response = await apiClient.get('/users/me');
     return response.data;
   },
-  logout: () => {
-    localStorage.removeItem('access_token');
+  logout: async () => {
+    await supabase.auth.signOut();
   },
   updateProfile: async (data) => {
     const response = await apiClient.put('/users/me', data);
     return response.data;
-  }
+  },
 };
 
 export const mealService = {
@@ -92,10 +91,13 @@ export const mealService = {
   deleteMeal: async (meal_id) => {
     const response = await apiClient.delete(`/meals/${meal_id}`);
     return response.data;
-  }
+  },
 };
 
 export function getErrorMessage(err, fallback = 'Something went wrong') {
+  // Supabase auth errors surface as Error objects with a message.
+  if (err?.message && !err?.response) return err.message;
+
   const detail = err?.response?.data?.detail;
   if (!detail) return fallback;
   if (typeof detail === 'string') return detail;

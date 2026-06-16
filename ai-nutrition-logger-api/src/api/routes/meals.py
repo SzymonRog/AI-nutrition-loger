@@ -1,5 +1,5 @@
 import os
-import shutil
+import tempfile
 from datetime import datetime
 from typing import Optional
 
@@ -15,8 +15,10 @@ from src.api.schemas import (
     MealTextRequest,
     ProcessedFoodItemResponse,
     ProcessedMealResponse,
+    MealTotalsUpdateRequest,
 )
-from src.config.constants import IMAGE_UPLOAD_DIR, ALLOWED_IMAGE_TYPES, MEAL_TYPES
+from src.config.constants import ALLOWED_IMAGE_TYPES, MEAL_TYPES
+from src.core.exceptions import AIServiceError
 from src.core.nutrition_workflow import NutritionLoggingWorkflow
 from src.core.image_nutrition_workflow import ImageNutritionWorkflow
 from src.processors.ai_text_processor import AITextProcessor
@@ -35,9 +37,6 @@ vision_processor = VisionAIProcessor()
 # Initialize workflows
 text_workflow = NutritionLoggingWorkflow(db, ai_processor, usda)
 image_workflow = ImageNutritionWorkflow(db, vision_processor, usda)
-
-# Image storage directory
-os.makedirs(IMAGE_UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("/text", response_model=ProcessedMealResponse)
@@ -72,6 +71,11 @@ def process_meal_text(
 
         return _build_meal_response(meal, result, request.meal_type)
 
+    except AIServiceError as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=e.message,
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -105,35 +109,39 @@ async def process_meal_image(
             detail="Invalid file type. Allowed: JPEG, PNG, WebP",
         )
 
-    # Save image to storage
+    # Persist the upload to a temp file: the vision workflow reads from a local
+    # path, then we upload to Supabase Storage for durable storage.
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     extension = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-    filename = f"{timestamp}_{current_user['user_id']}.{extension}"
-    filepath = os.path.join(IMAGE_UPLOAD_DIR, filename)
+    object_path = f"{current_user['user_id']}/{timestamp}.{extension}"
 
     try:
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        file_bytes = file.file.read()
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to save image: {str(e)}",
+            detail=f"Failed to read image: {str(e)}",
         )
 
+    fd, temp_path = tempfile.mkstemp(suffix=f".{extension}")
     try:
+        with os.fdopen(fd, "wb") as buffer:
+            buffer.write(file_bytes)
+
         result = image_workflow.process_image(
             user_id=current_user["user_id"],
-            image_path=filepath,
+            image_path=temp_path,
             meal_type=meal_type,
             description=meal_description,
         )
 
-        # Retrieve the persisted meal to get its ID
+        # The workflow persisted the meal with the temp path; find it, upload the
+        # image to durable storage, and rewrite image_path to the object path.
         meals = db.get_meals_by_date(
             current_user["user_id"], datetime.now().strftime("%Y-%m-%d")
         )
         meal = next(
-            (m for m in reversed(meals) if m.get("image_path") == filepath),
+            (m for m in reversed(meals) if m.get("image_path") == temp_path),
             None,
         )
 
@@ -143,21 +151,27 @@ async def process_meal_image(
                 detail="Failed to retrieve meal from database",
             )
 
-        return _build_meal_response(meal, result, meal_type, filepath)
+        db.upload_meal_image(file_bytes, object_path, file.content_type)
+        db.update_meal_image(meal["id"], object_path)
+        meal["image_path"] = object_path
 
+        return _build_meal_response(meal, result, meal_type, object_path)
+
+    except AIServiceError as e:
+        raise HTTPException(
+            status_code=e.status_code,
+            detail=e.message,
+        )
     except HTTPException:
-        # Clean up image on failure
-        if os.path.exists(filepath):
-            os.remove(filepath)
         raise
     except Exception as e:
-        # Clean up image on failure
-        if os.path.exists(filepath):
-            os.remove(filepath)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to process meal image: {str(e)}",
         )
+    finally:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 
 @router.get("/date/{target_date}", response_model=MealListResponse)
@@ -208,6 +222,47 @@ def get_meal_history(
     )
 
 
+@router.put("/{meal_id}/totals", response_model=ProcessedMealResponse)
+def update_meal_totals(
+    meal_id: str,
+    request: MealTotalsUpdateRequest,
+    current_user: dict = Depends(auth.get_current_user),
+):
+    """
+    Update the total macro and calorie values for a meal manually.
+    """
+    meal = db.get_meal(meal_id)
+    if not meal:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Meal not found",
+        )
+        
+    if meal["user_id"] != current_user["user_id"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to edit this meal",
+        )
+
+    updated = db.update_meal_totals(
+        meal_id=meal_id,
+        user_id=current_user["user_id"],
+        total_calories=request.total_calories,
+        total_protein=request.total_protein,
+        total_carbs=request.total_carbs,
+        total_fats=request.total_fats
+    )
+
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update meal totals",
+        )
+
+    updated_meal = db.get_meal(meal_id)
+    return _build_meal_from_db(updated_meal)
+
+
 @router.delete("/{meal_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_meal(
     meal_id: str,
@@ -230,13 +285,9 @@ def delete_meal(
             detail="Not authorized to delete this meal",
         )
         
-    # Delete image file if it exists
-    if meal.get("image_path") and os.path.exists(meal["image_path"]):
-        try:
-            os.remove(meal["image_path"])
-        except Exception as e:
-            # We log but continue deletion of DB record
-            print(f"Warning: Failed to delete image file {meal['image_path']}: {e}")
+    # Delete the stored image if present, then the DB record (items cascade).
+    if meal.get("image_path"):
+        db.delete_meal_image(meal["image_path"])
 
     db.delete_meal(meal_id)
     return None
