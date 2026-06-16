@@ -1,7 +1,14 @@
 import axios from 'axios';
 import { supabase } from '../lib/supabaseClient';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+// Accept VITE_API_URL as either the backend origin or origin + "/api/v1".
+// Normalize so the base always ends with the API prefix exactly once.
+function resolveApiBaseUrl() {
+  const raw = (import.meta.env.VITE_API_URL || 'http://localhost:8000').trim().replace(/\/+$/, '');
+  return /\/api\/v1$/.test(raw) ? raw : `${raw}/api/v1`;
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
