@@ -20,7 +20,16 @@ async def lifespan(app: FastAPI):
     print("Shutting down AI Nutrition Logger API...")
 
 
-allowed_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+# Normalize configured origins: trim whitespace and trailing slashes so a value
+# like "https://app.vercel.app/" still matches the browser's Origin header.
+_raw_origins = [o.strip().rstrip("/") for o in os.getenv("CORS_ORIGINS", "*").split(",")]
+allowed_origins = [o for o in _raw_origins if o]
+_allow_all_origins = "*" in allowed_origins or not allowed_origins
+
+# Auth uses bearer tokens (not cookies), so credentials aren't needed. The CORS
+# spec forbids combining "*" with credentials, so only enable credentials when
+# explicit origins are configured.
+_allow_credentials = not _allow_all_origins
 
 
 app = FastAPI(
@@ -35,8 +44,8 @@ app = FastAPI(
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"] if _allow_all_origins else allowed_origins,
+    allow_credentials=_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
