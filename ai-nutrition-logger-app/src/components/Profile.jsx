@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { authService, getErrorMessage } from '../api/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import CalorieWizard from './CalorieWizard';
 import { useLang } from '../i18n/LanguageContext';
 
@@ -120,6 +120,20 @@ export default function Profile() {
           </div>
         )}
       </div>
+
+      <Link
+        to="/calculator"
+        className="flex items-center justify-between border-2 border-black bg-white p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all hover:bg-secondary-container"
+      >
+        <div className="flex items-center gap-4">
+          <span className="material-symbols-outlined text-3xl">calculate</span>
+          <div>
+            <p className="font-black uppercase tracking-tight">{t('profile.calculators')}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">{t('profile.calculatorsSub')}</p>
+          </div>
+        </div>
+        <span className="material-symbols-outlined">chevron_right</span>
+      </Link>
 
       <div className="pt-4 flex flex-col items-center gap-6">
         <button

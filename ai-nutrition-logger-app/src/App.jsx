@@ -8,6 +8,7 @@ import MealSummary from './components/MealSummary';
 import History from './components/History';
 import Profile from './components/Profile';
 import Onboarding from './components/Onboarding';
+import Calculator from './components/Calculator';
 import { supabase } from './lib/supabaseClient';
 
 const PrivateRoute = ({ children }) => {
@@ -54,7 +55,14 @@ function App() {
           <Auth />
         </div>
       } />
-      
+
+      {/* Public — the calorie & BMI calculator needs no account. */}
+      <Route path="/calculator" element={
+        <div className="app-container">
+          <Calculator />
+        </div>
+      } />
+
       <Route path="/onboarding" element={
         <PrivateRoute>
           <Onboarding />

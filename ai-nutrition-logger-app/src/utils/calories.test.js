@@ -5,6 +5,8 @@ import {
   computeGoal,
   computeMacros,
   calculateDailyGoal,
+  computeBMI,
+  bmiCategory,
 } from './calories';
 
 describe('computeBMR (Mifflin-St Jeor)', () => {
@@ -46,6 +48,30 @@ describe('computeGoal', () => {
 describe('computeMacros', () => {
   it('splits 30/40/30 by calories', () => {
     expect(computeMacros(2000)).toEqual({ proteinG: 150, carbsG: 200, fatsG: 67 });
+  });
+});
+
+describe('computeBMI', () => {
+  it('computes BMI rounded to one decimal', () => {
+    // 80 / (1.80^2) = 24.69... -> 24.7
+    expect(computeBMI({ heightCm: 180, weightKg: 80 })).toBe(24.7);
+  });
+  it('returns 0 when height is missing', () => {
+    expect(computeBMI({ heightCm: 0, weightKg: 80 })).toBe(0);
+  });
+});
+
+describe('bmiCategory', () => {
+  it('classifies the WHO bands', () => {
+    expect(bmiCategory(17)).toBe('UNDERWEIGHT');
+    expect(bmiCategory(22)).toBe('NORMAL');
+    expect(bmiCategory(27)).toBe('OVERWEIGHT');
+    expect(bmiCategory(31)).toBe('OBESE');
+  });
+  it('uses inclusive lower / exclusive upper boundaries', () => {
+    expect(bmiCategory(18.5)).toBe('NORMAL');
+    expect(bmiCategory(25)).toBe('OVERWEIGHT');
+    expect(bmiCategory(30)).toBe('OBESE');
   });
 });
 
