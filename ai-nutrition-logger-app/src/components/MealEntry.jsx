@@ -1,26 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { mealService } from '../api/client';
 import { useNavigate } from 'react-router-dom';
-
-const FUNNY_MESSAGES = [
-  "Crunching the numbers...",
-  "You really ate that much? 🤨",
-  "That sounds delicious 🤤",
-  "Consulting the AI dietary gods...",
-  "Wait, let me double check...",
-  "Judging your life choices...",
-  "Math is hard, give me a sec..."
-];
+import { useLang } from '../i18n/LanguageContext';
+import { staggerContainer, popIn, fadeUp } from '../utils/motionPresets';
 
 const MEAL_CATEGORIES = [
-  { id: 'BREAKFAST', label: 'Breakfast', icon: 'wb_sunny' },
-  { id: 'LUNCH', label: 'Lunch', icon: 'lunch_dining' },
-  { id: 'DINNER', label: 'Dinner', icon: 'dinner_dining' },
-  { id: 'SNACK', label: 'Snack', icon: 'cookie' },
-  { id: 'OTHER', label: 'Other', icon: 'more_horiz' },
+  { id: 'BREAKFAST', icon: 'wb_sunny' },
+  { id: 'LUNCH', icon: 'lunch_dining' },
+  { id: 'DINNER', icon: 'dinner_dining' },
+  { id: 'SNACK', icon: 'cookie' },
+  { id: 'OTHER', icon: 'more_horiz' },
 ];
 
+const panelTransition = { duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] };
+
 export default function MealEntry() {
+  const { t } = useLang();
+  const funnyMessages = t('mealEntry.funny');
+
   const [step, setStep] = useState(0); // 0: Category, 1: Method/Input
   const [selectedType, setSelectedType] = useState(null);
   const [inputMethod, setInputMethod] = useState(null); // 'TEXT', 'CAM'
@@ -42,13 +40,13 @@ export default function MealEntry() {
     let interval;
     if (loading) {
       interval = setInterval(() => {
-        setLoadingTextIndex(prev => (prev + 1) % FUNNY_MESSAGES.length);
+        setLoadingTextIndex(prev => (prev + 1) % funnyMessages.length);
       }, 2500);
     } else {
       setLoadingTextIndex(0);
     }
     return () => clearInterval(interval);
-  }, [loading]);
+  }, [loading, funnyMessages.length]);
 
   const handleCategorySelect = (type) => {
     setSelectedType(type);
@@ -73,17 +71,17 @@ export default function MealEntry() {
     const detail = err.response?.data?.detail;
 
     if (status === 503) {
-      return 'AI model is currently busy. Please try again later.';
+      return t('mealEntry.errBusy');
     } else if (status === 500) {
-      return detail || 'An error occurred while processing your meal. Please try again.';
+      return detail || t('mealEntry.errGeneric');
     } else {
-      return detail || 'Failed to analyze meal. Please try again.';
+      return detail || t('mealEntry.errGeneric');
     }
   };
 
   const handleTextSubmit = async () => {
     if (!textInput.trim()) {
-      setError('Please describe your meal.');
+      setError(t('mealEntry.errEmpty'));
       return;
     }
 
@@ -127,149 +125,186 @@ export default function MealEntry() {
     setError('');
   };
 
+  // Identifies which panel is showing so AnimatePresence can cross-fade them.
+  const viewKey = step === 0 ? 'category' : (inputMethod || 'method');
+
   return (
     <div className="relative min-h-full">
       <div className="space-y-8">
         {/* Header with Back Button */}
-        <section className="flex items-start justify-between">
-          <div>
-            <h2 className="text-4xl font-black tracking-tighter mb-1 font-headline uppercase italic">
-              {step === 0 ? "Log Meal" : selectedType}
+        <section className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter mb-1 font-headline uppercase italic truncate">
+              {step === 0 ? t('mealEntry.logMeal') : t(`mealType.${selectedType}`)}
             </h2>
             <p className="text-on-surface-variant text-[10px] font-bold tracking-widest uppercase">
-              {step === 0 ? "Select category first" : "Choose input method"}
+              {step === 0 ? t('mealEntry.selectCategory') : t('mealEntry.chooseInput')}
             </p>
           </div>
           {step > 0 && (
-            <button onClick={reset} className="p-2 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors">
+            <motion.button whileTap={{ scale: 0.92, rotate: -90 }} onClick={reset} className="p-2 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors shrink-0">
               <span className="material-symbols-outlined">restart_alt</span>
-            </button>
+            </motion.button>
           )}
         </section>
 
-        {/* Step 0: Category Selection */}
-        {step === 0 && (
-          <div className="grid grid-cols-2 gap-4">
-            {MEAL_CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategorySelect(cat.id)}
-                className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-all hover:bg-black hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+        <AnimatePresence mode="wait">
+          {/* Step 0: Category Selection */}
+          {step === 0 && (
+            <motion.div
+              key="category"
+              variants={staggerContainer} initial="hidden" animate="show" exit={{ opacity: 0, y: -8, transition: panelTransition }}
+              className="grid grid-cols-2 gap-3 sm:gap-4"
+            >
+              {MEAL_CATEGORIES.map((cat) => (
+                <motion.button
+                  key={cat.id}
+                  variants={popIn}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleCategorySelect(cat.id)}
+                  className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-colors hover:bg-black hover:text-white"
+                >
+                  <span className="material-symbols-outlined text-4xl mb-4">{cat.icon}</span>
+                  <span className="text-[10px] font-black tracking-[0.3em] uppercase text-center px-2">{t(`mealType.${cat.id}`)}</span>
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Step 1: Input Method Choice */}
+          {step === 1 && !inputMethod && (
+            <motion.div
+              key="method"
+              variants={staggerContainer} initial="hidden" animate="show" exit={{ opacity: 0, y: -8, transition: panelTransition }}
+              className="grid grid-cols-2 gap-3 sm:gap-4"
+            >
+              <motion.button
+                variants={popIn}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setInputMethod('TEXT')}
+                className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-colors hover:bg-black hover:text-white"
               >
-                <span className="material-symbols-outlined text-4xl mb-4">{cat.icon}</span>
-                <span className="text-[10px] font-black tracking-[0.3em] uppercase">{cat.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
+                <span className="material-symbols-outlined text-4xl mb-4">edit_note</span>
+                <span className="text-[10px] font-black tracking-[0.3em] uppercase">{t('mealEntry.describe')}</span>
+              </motion.button>
 
-        {/* Step 1: Input Method Choice */}
-        {step === 1 && !inputMethod && (
-          <div className="grid grid-cols-2 gap-4 scale-in-center">
-            <button
-              onClick={() => setInputMethod('TEXT')}
-              className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-all hover:bg-black hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              <motion.button
+                variants={popIn}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => fileInputRef.current.click()}
+                className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-colors hover:bg-black hover:text-white"
+              >
+                <span className="material-symbols-outlined text-4xl mb-4">photo_camera</span>
+                <span className="text-[10px] font-black tracking-[0.3em] uppercase">{t('mealEntry.photo')}</span>
+              </motion.button>
+              <input type="file" ref={fileInputRef} onChange={handleFileSelection} accept="image/jpeg, image/png, image/webp" className="hidden" />
+            </motion.div>
+          )}
+
+          {/* Text Input State */}
+          {step === 1 && inputMethod === 'TEXT' && (
+            <motion.div
+              key="text"
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0, transition: panelTransition }} exit={{ opacity: 0, y: -8, transition: panelTransition }}
+              className="space-y-6"
             >
-              <span className="material-symbols-outlined text-4xl mb-4">edit_note</span>
-              <span className="text-[10px] font-black tracking-[0.3em] uppercase">Describe</span>
-            </button>
-
-            <button
-              onClick={() => fileInputRef.current.click()}
-              className="group flex flex-col items-center justify-center bg-white high-contrast-border neo-shadow aspect-square transition-all hover:bg-black hover:text-white active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-            >
-              <span className="material-symbols-outlined text-4xl mb-4">photo_camera</span>
-              <span className="text-[10px] font-black tracking-[0.3em] uppercase">Photo</span>
-            </button>
-            <input type="file" ref={fileInputRef} onChange={handleFileSelection} accept="image/jpeg, image/png, image/webp" className="hidden" />
-          </div>
-        )}
-
-        {/* Text Input State */}
-        {step === 1 && inputMethod === 'TEXT' && (
-          <div className="space-y-6 scale-in-center">
-            <div className="high-contrast-border neo-shadow bg-[#f0f5f1] p-6 relative">
-              <textarea
-                className="w-full h-48 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-relaxed text-lg font-medium outline-none"
-                placeholder="E.g., 3 eggs and one avocado"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                autoFocus
-              />
-              <div className="absolute bottom-4 right-4 pointer-events-none">
-                <span className="material-symbols-outlined text-black/20 text-4xl">edit_note</span>
-              </div>
-            </div>
-
-            {error && <div className="text-error font-bold text-[10px] uppercase tracking-widest">{error}</div>}
-
-            <button
-              onClick={handleTextSubmit}
-              disabled={loading}
-              className="w-full bg-secondary text-white py-5 px-6 high-contrast-border font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all neo-shadow"
-            >
-              <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>
-                {loading ? 'progress_activity' : 'auto_awesome'}
-              </span>
-              {loading ? FUNNY_MESSAGES[loadingTextIndex] : 'Process Text'}
-            </button>
-          </div>
-        )}
-
-        {/* Cam Input State (with Description) */}
-        {step === 1 && inputMethod === 'CAM' && (
-          <div className="space-y-6 scale-in-center">
-            {imagePreview && (
-              <div className="high-contrast-border neo-shadow bg-black aspect-video overflow-hidden">
-                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover opacity-90" />
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-1">
-                Portion Notes / Corrections (Optional)
-              </label>
-              <div className="high-contrast-border neo-shadow bg-[#f0f5f1] p-4 relative">
+              <div className="high-contrast-border neo-shadow bg-[#f0f5f1] p-6 relative">
                 <textarea
-                  className="w-full h-24 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-tight text-sm font-medium outline-none"
-                  placeholder="E.g., Large portion of rice, extra butter on the side..."
-                  value={mealDescription}
-                  onChange={(e) => setMealDescription(e.target.value)}
+                  className="w-full h-48 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-relaxed text-lg font-medium outline-none"
+                  placeholder={t('mealEntry.placeholderText')}
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  autoFocus
                 />
+                <div className="absolute bottom-4 right-4 pointer-events-none">
+                  <span className="material-symbols-outlined text-black/20 text-4xl">edit_note</span>
+                </div>
               </div>
-            </div>
 
-            {error && <div className="text-error font-bold text-[10px] uppercase tracking-widest">{error}</div>}
+              {error && <div className="text-error font-bold text-[10px] uppercase tracking-widest">{error}</div>}
 
-            <button
-              onClick={handleImageSubmit}
-              disabled={loading}
-              className="w-full bg-secondary text-white py-5 px-6 high-contrast-border font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all neo-shadow"
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={handleTextSubmit}
+                disabled={loading}
+                className="w-full bg-secondary text-white py-5 px-6 high-contrast-border font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 transition-colors neo-shadow"
+              >
+                <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>
+                  {loading ? 'progress_activity' : 'auto_awesome'}
+                </span>
+                {loading ? funnyMessages[loadingTextIndex] : t('mealEntry.processText')}
+              </motion.button>
+            </motion.div>
+          )}
+
+          {/* Cam Input State (with Description) */}
+          {step === 1 && inputMethod === 'CAM' && (
+            <motion.div
+              key="cam"
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0, transition: panelTransition }} exit={{ opacity: 0, y: -8, transition: panelTransition }}
+              className="space-y-6"
             >
-              <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>
-                {loading ? 'progress_activity' : 'auto_awesome'}
-              </span>
-              {loading ? FUNNY_MESSAGES[loadingTextIndex] : 'Submit Photo'}
-            </button>
+              {imagePreview && (
+                <div className="high-contrast-border neo-shadow bg-black aspect-video overflow-hidden">
+                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover opacity-90" />
+                </div>
+              )}
 
-            <button
-              onClick={() => { setSelectedFile(null); setImagePreview(null); setInputMethod(null); }}
-              className="w-full text-[10px] font-black uppercase tracking-[0.2em] py-2 opacity-60 hover:opacity-100"
-            >
-              Change Method
-            </button>
-          </div>
-        )}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-1">
+                  {t('mealEntry.portionNotes')}
+                </label>
+                <div className="high-contrast-border neo-shadow bg-[#f0f5f1] p-4 relative">
+                  <textarea
+                    className="w-full h-24 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-on-surface-variant/40 resize-none font-body leading-tight text-sm font-medium outline-none"
+                    placeholder={t('mealEntry.placeholderNotes')}
+                    value={mealDescription}
+                    onChange={(e) => setMealDescription(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {error && <div className="text-error font-bold text-[10px] uppercase tracking-widest">{error}</div>}
+
+              <motion.button
+                whileTap={{ scale: 0.98 }}
+                onClick={handleImageSubmit}
+                disabled={loading}
+                className="w-full bg-secondary text-white py-5 px-6 high-contrast-border font-headline font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-opacity-90 transition-colors neo-shadow"
+              >
+                <span className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}>
+                  {loading ? 'progress_activity' : 'auto_awesome'}
+                </span>
+                {loading ? funnyMessages[loadingTextIndex] : t('mealEntry.submitPhoto')}
+              </motion.button>
+
+              <button
+                onClick={() => { setSelectedFile(null); setImagePreview(null); setInputMethod(null); }}
+                className="w-full text-[10px] font-black uppercase tracking-[0.2em] py-2 opacity-60 hover:opacity-100"
+              >
+                {t('mealEntry.changeMethod')}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {loading && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/80 backdrop-blur-sm">
-          <div className="p-6 bg-black text-white font-bold tracking-widest text-xs uppercase shadow-2xl flex items-center gap-3 border-2 border-white">
-            <span className="material-symbols-outlined animate-spin">progress_activity</span>
-            {FUNNY_MESSAGES[loadingTextIndex]}
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-white/80 backdrop-blur-sm px-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+              className="p-6 bg-black text-white font-bold tracking-widest text-xs uppercase shadow-2xl flex items-center gap-3 border-2 border-white text-center"
+            >
+              <span className="material-symbols-outlined animate-spin shrink-0">progress_activity</span>
+              {funnyMessages[loadingTextIndex]}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
