@@ -31,13 +31,13 @@ function StepHeader({ title, subtitle }) {
   );
 }
 
-function SelectCard({ selected, onClick, children }) {
+function SelectCard({ selected, onClick, children, padding = 'p-5' }) {
   return (
     <motion.button
       type="button"
       onClick={onClick}
       whileTap={{ scale: 0.97 }}
-      className={`w-full border-2 border-black p-5 text-left transition-all ${
+      className={`w-full border-2 border-black ${padding} text-left transition-all ${
         selected
           ? 'bg-secondary text-on-secondary shadow-none translate-x-0.5 translate-y-0.5'
           : 'bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
@@ -53,10 +53,10 @@ function SexStep({ value, onSelect }) {
   return (
     <div>
       <StepHeader title={t('wizard.sexTitle')} subtitle={t('wizard.sexSub')} />
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {[{ k: 'MALE', l: t('wizard.male') }, { k: 'FEMALE', l: t('wizard.female') }].map((o) => (
           <SelectCard key={o.k} selected={value === o.k} onClick={() => onSelect(o.k)}>
-            <span className="text-2xl font-black uppercase tracking-tighter">{o.l}</span>
+            <span className="block text-lg sm:text-2xl font-black uppercase tracking-tight leading-tight break-words">{o.l}</span>
           </SelectCard>
         ))}
       </div>
@@ -102,8 +102,8 @@ function ActivityStep({ value, onSelect }) {
       <div className="space-y-3">
         {ACTIVITY_LEVELS.map((l) => (
           <SelectCard key={l.key} selected={value === l.key} onClick={() => onSelect(l.key)}>
-            <div className="flex justify-between items-center gap-3">
-              <span className="text-base font-black uppercase tracking-tight">{t(`wizard.activity.${l.key}.label`)}</span>
+            <div className="flex justify-between items-center gap-2 sm:gap-3">
+              <span className="min-w-0 text-sm sm:text-base font-black uppercase tracking-tight leading-tight break-words">{t(`wizard.activity.${l.key}.label`)}</span>
               <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 text-right shrink-0">{t(`wizard.activity.${l.key}.desc`)}</span>
             </div>
           </SelectCard>
@@ -119,10 +119,10 @@ function GoalStep({ form, set }) {
   return (
     <div>
       <StepHeader title={t('wizard.goalTitle')} subtitle={t('wizard.goalSub')} />
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
         {GOAL_DIRECTIONS.map((d) => (
-          <SelectCard key={d.key} selected={form.direction === d.key} onClick={() => { if (form.direction !== d.key) set({ direction: d.key, pace: '' }); }}>
-            <span className="text-sm font-black uppercase tracking-tight">{t(`wizard.direction.${d.key}`)}</span>
+          <SelectCard key={d.key} padding="p-3 sm:p-4" selected={form.direction === d.key} onClick={() => { if (form.direction !== d.key) set({ direction: d.key, pace: '' }); }}>
+            <span className="block text-center text-xs sm:text-sm font-black uppercase tracking-tight leading-tight break-words hyphens-auto">{t(`wizard.direction.${d.key}`)}</span>
           </SelectCard>
         ))}
       </div>
@@ -137,8 +137,8 @@ function GoalStep({ form, set }) {
             <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">{t('wizard.pace')}</label>
             {paces.map((p) => (
               <SelectCard key={p.key} selected={form.pace === p.key} onClick={() => set({ pace: p.key })}>
-                <div className="flex justify-between items-center gap-3">
-                  <span className="text-base font-black uppercase tracking-tight">{t(`wizard.paceOpt.${p.key}.label`)}</span>
+                <div className="flex justify-between items-center gap-2 sm:gap-3">
+                  <span className="min-w-0 text-sm sm:text-base font-black uppercase tracking-tight leading-tight break-words">{t(`wizard.paceOpt.${p.key}.label`)}</span>
                   <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 text-right shrink-0">{t(`wizard.paceOpt.${p.key}.desc`)}</span>
                 </div>
               </SelectCard>
@@ -241,6 +241,10 @@ export default function CalorieWizard({
     setDir(delta);
     setStepIndex((i) => Math.min(Math.max(i + delta, 0), STEPS.length - 1));
   };
+  const startOver = () => {
+    setDir(-1);
+    setStepIndex(0);
+  };
 
   const canAdvance = () => {
     switch (step) {
@@ -278,7 +282,7 @@ export default function CalorieWizard({
         />
       </div>
 
-      <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-8 min-h-[380px] flex flex-col">
+      <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-5 sm:p-8 min-h-[380px] flex flex-col">
         <AnimatePresence mode="wait" custom={dir}>
           <motion.div
             key={step}
@@ -323,6 +327,13 @@ export default function CalorieWizard({
               className="bg-black text-white py-3 px-8 border-2 border-black font-black text-xs tracking-widest uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-30"
             >
               {t('wizard.next')}
+            </button>
+          ) : mode === 'calculator' ? (
+            <button
+              onClick={startOver}
+              className="bg-secondary text-on-secondary py-3 px-8 border-2 border-black font-black text-xs tracking-widest uppercase active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            >
+              {t('wizard.startOver')}
             </button>
           ) : (
             <button

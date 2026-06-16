@@ -62,6 +62,23 @@ export function computeGoal({ tdee, sex, direction, pace }) {
   return Math.round(clamped / 10) * 10;
 }
 
+// Body Mass Index: weight (kg) divided by height (m) squared. Independent of
+// age/sex/activity — a pure mass-to-height ratio. Returns one decimal place.
+export function computeBMI({ heightCm, weightKg }) {
+  const heightM = heightCm / 100;
+  if (!heightM) return 0;
+  const bmi = weightKg / (heightM * heightM);
+  return Math.round(bmi * 10) / 10;
+}
+
+// WHO classification bands for adults.
+export function bmiCategory(bmi) {
+  if (bmi < 18.5) return 'UNDERWEIGHT';
+  if (bmi < 25) return 'NORMAL';
+  if (bmi < 30) return 'OVERWEIGHT';
+  return 'OBESE';
+}
+
 export function computeMacros(calories) {
   return {
     proteinG: Math.round((calories * 0.30) / 4),

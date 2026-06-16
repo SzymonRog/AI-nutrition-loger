@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { authService, getErrorMessage } from '../api/client';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useLang } from '../i18n/LanguageContext';
 import LangToggle from './LangToggle';
 
@@ -107,6 +107,23 @@ export default function Auth() {
               </div>
             </form>
           </div>
+
+          {/* Free tool — no account needed. */}
+          <div className="text-center space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="h-px flex-grow bg-on-surface-variant/20" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/50">{t('auth.or')}</span>
+              <span className="h-px flex-grow bg-on-surface-variant/20" />
+            </div>
+            <Link
+              to="/calculator"
+              className="flex items-center justify-center gap-2 w-full bg-white text-on-surface py-4 px-6 font-bold tracking-widest text-sm uppercase transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black hover:bg-secondary-container"
+            >
+              <span className="material-symbols-outlined text-lg">calculate</span>
+              {t('auth.tryCalculator')}
+            </Link>
+          </div>
+
           <footer className="text-center pt-8">
             <p className="text-[10px] font-label uppercase tracking-[0.3em] text-on-surface-variant/40">{t('auth.footer')}</p>
           </footer>
