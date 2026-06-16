@@ -1,12 +1,9 @@
 from datetime import datetime
 from typing import List, Optional, Union
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, Field
 
 from src.config.constants import (
-    PASSWORD_MIN_LENGTH,
-    PASSWORD_MAX_LENGTH,
-    DEFAULT_DAILY_CALORIE_GOAL,
     CALORIE_GOAL_MIN,
     CALORIE_GOAL_MAX,
     MEAL_TEXT_MAX_LENGTH,
@@ -22,32 +19,6 @@ from src.config.constants import (
     WEIGHT_KG_MIN,
     WEIGHT_KG_MAX,
 )
-
-
-# --- Authentication Schemas ---
-class UserRegister(BaseModel):
-    email: EmailStr
-    password: str = Field(..., min_length=PASSWORD_MIN_LENGTH, max_length=PASSWORD_MAX_LENGTH)
-    daily_calorie_goal: Optional[int] = Field(
-        default=DEFAULT_DAILY_CALORIE_GOAL,
-        ge=CALORIE_GOAL_MIN,
-        le=CALORIE_GOAL_MAX,
-    )
-
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
-class TokenData(BaseModel):
-    user_id: Optional[str] = None
-    email: Optional[str] = None
 
 
 # --- User Schemas ---
